@@ -99,6 +99,34 @@
             box-sizing: border-box;
         }
 
+        .payment-info-box {
+            background: #0f172a;
+            border: 1px dashed var(--neon-gold);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pay-btn-link {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .qr-img {
+            max-width: 180px;
+            margin: 10px auto;
+            display: block;
+            border: 4px solid white;
+            border-radius: 8px;
+        }
+
         .options-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -164,9 +192,19 @@
     </div>
 
     <form id="predictionForm">
-        <!-- SECTION 1 -->
         <div id="section1" class="section active">
             <h3 style="color:var(--pitch-green)">Section 1: Entry & Payment Info</h3>
+            
+            <div class="payment-info-box">
+                <p style="margin:0 0 5px 0; font-size: 16px;">💵 Entry Fee: <strong id="fee-display" style="color:var(--neon-gold); font-size:20px;">₹0</strong></p>
+                <p style="font-size:13px; color:#94a3b8; margin-bottom:10px;">Niche diye gaye UPI/QR par payment karke UTR/Txn ID copy karein.</p>
+                
+                <div id="qr-container"></div>
+                <p style="margin: 5px 0; font-weight:bold;">UPI ID: <span id="upi-display" style="color:var(--pitch-green);"></span></p>
+                
+                <a id="pay-link" href="#" class="pay-btn-link" target="_blank">Pay Directly via UPI App 📱</a>
+            </div>
+
             <div class="form-group">
                 <label>Aapka Full Name:</label>
                 <input type="text" id="username" required placeholder="Enter your name">
@@ -176,13 +214,12 @@
                 <input type="text" id="phone" required placeholder="Enter WhatsApp Number">
             </div>
             <div class="form-group">
-                <label>Payment Transaction ID (Paid Token):</label>
-                <input type="text" id="txnid" required placeholder="Paste UPI Txn ID here">
+                <label>Payment Transaction ID / UTR Number (Exact 12 Digits):</label>
+                <input type="text" id="txnid" maxlength="12" required placeholder="Ex: 348912345678">
             </div>
             <button type="button" onclick="startPrediction()">Start Live Predictions 🚀</button>
         </div>
 
-        <!-- SECTION 2 -->
         <div id="section2" class="section">
             <h3 style="color:var(--pitch-green)">Section 2: Match Predictions</h3>
             
@@ -233,20 +270,25 @@
     // ⚙️ APP CONFIGURATION PANEL (SAB KUCH YAHAN SE CONTROL KAREIN)
     // ==========================================
     const APP_CONFIG = {
-        // Google Sheet Apps Script Web App URL
+        // 🚀 Google Sheet Apps Script URL
         scriptUrl: "https://script.google.com/macros/s/AKfycbz0oyCqTgsQr7b0yoCi0A7boK4aPfBMyLgI7QmkcTtRNtBXv5JYuRYUEoZuPROfEx9W/exec",
         
-        // 🛑 Quiz Contest status (true = chalu, false = band)
+        // 🛑 Quiz Contest Status (true = Chalu, false = Band)
         isContestLive: true,
         
         // ⏱️ Har question ka countdown timer (seconds mein)
-        timerDuration: 15, 
+        timerDuration: 10, 
 
-        // 📝 Sawaal aur Options (Hindi/English dono mein yahan likhein)
+        // 💵 ENTRY FEE & PAYMENT CONFIGURATION
+        entryFee: "15",              // Yahan aap "10", "15", ya "100" jo chahein likhein
+        upiId: "yourupi@okaxis",     // Aapka asli UPI ID jahan paise chahiye
+        qrImageUrl: "",              // (Optional) Agar PhonePe QR ka image URL hai toh yahan paste karein
+
+        // 📝 Sawaal aur Options (Hindi/English)
         questions: {
             q1: {
                 text: "Q1: Aaj ka match kaunsi team jeetegi?",
-                options: ["India", "Pakistan"]
+                options: ["Team A", "Team B"]
             },
             q2: {
                 text: "Q2: Kya aaj koi batsman century (100) banayega?",
@@ -280,11 +322,24 @@
     let isContestLive = APP_CONFIG.isContestLive;
     let answersData = {};
 
-    // Load Configuration into UI
     window.onload = function() {
         document.getElementById('contest-status').innerText = isContestLive ? "LIVE" : "CLOSED";
         document.getElementById('contest-status').style.color = isContestLive ? "#10b981" : "#ef4444";
         document.getElementById('q-timer').innerText = APP_CONFIG.timerDuration + "s";
+        
+        // Dynamic Payment Setup
+        document.getElementById('fee-display').innerText = "₹" + APP_CONFIG.entryFee;
+        document.getElementById('upi-display').innerText = APP_CONFIG.upiId;
+        
+        // Dynamic Deep-linking for Mobile Users (Intent Pay)
+        let deepLink = `upi://pay?pa=${APP_CONFIG.upiId}&pn=Only4CricketFans&am=${APP_CONFIG.entryFee}&cu=INR`;
+        document.getElementById('pay-link').href = deepLink;
+
+        // Show QR image if provided
+        if(APP_CONFIG.qrImageUrl !== "") {
+            document.getElementById('qr-container').innerHTML = `<img src="${APP_CONFIG.qrImageUrl}" class="qr-img" alt="Payment QR">`;
+        }
+
         setupQuestionsUI();
     };
 
@@ -292,8 +347,6 @@
         for(let i=1; i<=7; i++) {
             let qData = APP_CONFIG.questions[`q${i}`];
             document.getElementById(`label-q${i}`).innerText = qData.text;
-            
-            // Build options for MCQs / Yes-No
             if(qData.options) {
                 let optionsHtml = "";
                 qData.options.forEach(opt => {
@@ -309,14 +362,22 @@
             alert("Sorry! Yeh contest abhi closed hai.");
             return;
         }
-        answersData.username = document.getElementById('username').value;
-        answersData.phone = document.getElementById('phone').value;
-        answersData.txnid = document.getElementById('txnid').value;
+        answersData.username = document.getElementById('username').value.trim();
+        answersData.phone = document.getElementById('phone').value.trim();
+        answersData.txnid = document.getElementById('txnid').value.trim();
 
         if(answersData.username == "" || answersData.phone == "" || answersData.txnid == "") {
             alert("Kripya poori details aur Payment ID bharein!");
             return;
         }
+
+        // 🛡️ Live Fake Entry Validation Rule (12 Digits Validation)
+        let txnRegex = /^\d{12}$/; 
+        if(!txnRegex.test(answersData.txnid)) {
+            alert("❌ Galat Transaction ID! Kripya bank se aaya hua exact 12-digit ka UTR/Txn Number hi dalein.");
+            return;
+        }
+
         document.getElementById('section1').classList.remove('active');
         document.getElementById('section2').classList.add('active');
         startTimer();
@@ -343,7 +404,7 @@
             let selected = document.querySelector(`input[name="q${currentQ}"]:checked`);
             answersData[`q${currentQ}`] = selected ? selected.value : "No Answer";
         } else if ([3, 6].includes(currentQ)) {
-            let typed = document.getElementById(`q${currentQ}`).value;
+            let typed = document.getElementById(`q${currentQ}`).value.trim();
             answersData[`q${currentQ}`] = typed ? typed : "No Answer";
         }
     }
@@ -374,7 +435,7 @@
                 alert("Thank you! Aapke prediction live Google Sheet mein save ho gaye hain.");
                 location.reload();
             }).catch(err => {
-                alert("Data submit karne mein koi issue aaya, kripya check karein!");
+                alert("Data submit karne mein koi issue aaya!");
                 console.error(err);
             });
         }
