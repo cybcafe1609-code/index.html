@@ -164,6 +164,7 @@
     </div>
 
     <form id="predictionForm">
+        <!-- SECTION 1 -->
         <div id="section1" class="section active">
             <h3 style="color:var(--pitch-green)">Section 1: Entry & Payment Info</h3>
             <div class="form-group">
@@ -181,58 +182,43 @@
             <button type="button" onclick="startPrediction()">Start Live Predictions 🚀</button>
         </div>
 
+        <!-- SECTION 2 -->
         <div id="section2" class="section">
             <h3 style="color:var(--pitch-green)">Section 2: Match Predictions</h3>
             
             <div class="form-group quiz-q" id="qBox1">
-                <label>Q1: Aaj ka match kaunsi team jeetegi?</label>
-                <div class="options-grid">
-                    <label class="radio-label"><input type="radio" name="q1" value="Team A"> Team A</label>
-                    <label class="radio-label"><input type="radio" name="q1" value="Team B"> Team B</label>
-                </div>
+                <label id="label-q1"></label>
+                <div class="options-grid" id="options-q1"></div>
             </div>
 
             <div class="form-group quiz-q" id="qBox2" style="display:none;">
-                <label>Q2: Kya aaj koi batsman century (100) banayega?</label>
-                <div class="options-grid">
-                    <label class="radio-label"><input type="radio" name="q2" value="Yes"> YES (Haan)</label>
-                    <label class="radio-label"><input type="radio" name="q2" value="No"> NO (Nahi)</label>
-                </div>
+                <label id="label-q2"></label>
+                <div class="options-grid" id="options-q2"></div>
             </div>
 
             <div class="form-group quiz-q" id="qBox3" style="display:none;">
-                <label>Q3: Powerplay (Pehle 6 overs) mein kitne runs banenge? (Exact ya closest)</label>
-                <input type="text" id="q3" placeholder="Ex: 52">
+                <label id="label-q3"></label>
+                <input type="text" id="q3" placeholder="Apna javab likhein (Answer here)">
             </div>
 
             <div class="form-group quiz-q" id="qBox4" style="display:none;">
-                <label>Q4: Match mein sabse zyada wickets kaun lega?</label>
-                <div class="options-grid">
-                    <label class="radio-label"><input type="radio" name="q4" value="Spinners"> Spinners</label>
-                    <label class="radio-label"><input type="radio" name="q4" value="Fast Bowlers"> Fast Bowlers</label>
-                </div>
+                <label id="label-q4"></label>
+                <div class="options-grid" id="options-q4"></div>
             </div>
 
             <div class="form-group quiz-q" id="qBox5" style="display:none;">
-                <label>Q5: Kya 1st over mein wicket girega?</label>
-                <div class="options-grid">
-                    <label class="radio-label"><input type="radio" name="q5" value="Yes"> YES</label>
-                    <label class="radio-label"><input type="radio" name="q5" value="No"> NO</label>
-                </div>
+                <label id="label-q5"></label>
+                <div class="options-grid" id="options-q5"></div>
             </div>
 
             <div class="form-group quiz-q" id="qBox6" style="display:none;">
-                <label>Q6: Is match ka 'Man of the Match' player kaun hoga?</label>
+                <label id="label-q6"></label>
                 <input type="text" id="q6" placeholder="Player ka naam likhein">
             </div>
 
             <div class="form-group quiz-q" id="qBox7" style="display:none;">
-                <label>Q7: Aaj total kitne Sixes (6s) lagenge?</label>
-                <div class="options-grid">
-                    <label class="radio-label"><input type="radio" name="q7" value="Under 10"> 10 se kam</label>
-                    <label class="radio-label"><input type="radio" name="q7" value="10-15"> 10 se 15 ke beech</label>
-                    <label class="radio-label"><input type="radio" name="q7" value="15+"> 15 se zyada</label>
-                </div>
+                <label id="label-q7"></label>
+                <div class="options-grid" id="options-q7"></div>
             </div>
 
             <button type="button" id="nextBtn" onclick="nextQuestion()">Next Question ➡️</button>
@@ -243,14 +229,80 @@
 <button class="admin-btn" onclick="toggleContest()">Admin: Close/Open Contest Manually</button>
 
 <script>
-    // ⚠️ APNA APPS SCRIPT WEB APP URL NICHE PASTE KAREIN
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0oyCqTgsQr7b0yoCi0A7boK4aPfBMyLgI7QmkcTtRNtBXv5JYuRYUEoZuPROfEx9W/exec";
+    // ==========================================
+    // ⚙️ APP CONFIGURATION PANEL (SAB KUCH YAHAN SE CONTROL KAREIN)
+    // ==========================================
+    const APP_CONFIG = {
+        // Google Sheet Apps Script Web App URL
+        scriptUrl: "https://script.google.com/macros/s/AKfycbz0oyCqTgsQr7b0yoCi0A7boK4aPfBMyLgI7QmkcTtRNtBXv5JYuRYUEoZuPROfEx9W/exec",
+        
+        // 🛑 Quiz Contest status (true = chalu, false = band)
+        isContestLive: true,
+        
+        // ⏱️ Har question ka countdown timer (seconds mein)
+        timerDuration: 10, 
+
+        // 📝 Sawaal aur Options (Hindi/English dono mein yahan likhein)
+        questions: {
+            q1: {
+                text: "Q1: Aaj ka match kaunsi team jeetegi?",
+                options: ["Team A", "Team B"]
+            },
+            q2: {
+                text: "Q2: Kya aaj koi batsman century (100) banayega?",
+                options: ["YES (Haan)", "NO (Nahi)"]
+            },
+            q3: {
+                text: "Q3: Powerplay (Pehle 6 overs) mein kitne runs banenge? (Exact ya closest)"
+            },
+            q4: {
+                text: "Q4: Match mein sabse zyada wickets kaun lega?",
+                options: ["Spinners", "Fast Bowlers"]
+            },
+            q5: {
+                text: "Q5: Kya 1st over mein wicket girega?",
+                options: ["YES", "NO"]
+            },
+            q6: {
+                text: "Q6: Is match ka 'Man of the Match' player kaun hoga?"
+            },
+            q7: {
+                text: "Q7: Aaj total kitne Sixes (6s) lagenge?",
+                options: ["10 se kam", "10 se 15 ke beech", "15 se zyada"]
+            }
+        }
+    };
+    // ==========================================
 
     let currentQ = 1;
     let timer;
-    let timeLeft = 10;
-    let isContestLive = true;
+    let timeLeft = APP_CONFIG.timerDuration;
+    let isContestLive = APP_CONFIG.isContestLive;
     let answersData = {};
+
+    // Load Configuration into UI
+    window.onload = function() {
+        document.getElementById('contest-status').innerText = isContestLive ? "LIVE" : "CLOSED";
+        document.getElementById('contest-status').style.color = isContestLive ? "#10b981" : "#ef4444";
+        document.getElementById('q-timer').innerText = APP_CONFIG.timerDuration + "s";
+        setupQuestionsUI();
+    };
+
+    function setupQuestionsUI() {
+        for(let i=1; i<=7; i++) {
+            let qData = APP_CONFIG.questions[`q${i}`];
+            document.getElementById(`label-q${i}`).innerText = qData.text;
+            
+            // Build options for MCQs / Yes-No
+            if(qData.options) {
+                let optionsHtml = "";
+                qData.options.forEach(opt => {
+                    optionsHtml += `<label class="radio-label"><input type="radio" name="q${i}" value="${opt}"> ${opt}</label>`;
+                });
+                document.getElementById(`options-q${i}`).innerHTML = optionsHtml;
+            }
+        }
+    }
 
     function startPrediction() {
         if(!isContestLive) {
@@ -271,7 +323,7 @@
     }
 
     function startTimer() {
-        timeLeft = 10;
+        timeLeft = APP_CONFIG.timerDuration;
         document.getElementById('q-timer').innerText = timeLeft + "s";
         clearInterval(timer);
         
@@ -287,10 +339,10 @@
     }
 
     function saveCurrentAnswer() {
-        if (currentQ === 1 || currentQ === 2 || currentQ === 4 || currentQ === 5 || currentQ === 7) {
+        if ([1, 2, 4, 5, 7].includes(currentQ)) {
             let selected = document.querySelector(`input[name="q${currentQ}"]:checked`);
             answersData[`q${currentQ}`] = selected ? selected.value : "No Answer";
-        } else if (currentQ === 3 || currentQ === 6) {
+        } else if ([3, 6].includes(currentQ)) {
             let typed = document.getElementById(`q${currentQ}`).value;
             answersData[`q${currentQ}`] = typed ? typed : "No Answer";
         }
@@ -313,8 +365,7 @@
             document.getElementById('nextBtn').disabled = true;
             document.getElementById('nextBtn').innerText = "Please Wait...";
             
-            // Send data to Google Sheet
-            fetch(SCRIPT_URL, {
+            fetch(APP_CONFIG.scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
