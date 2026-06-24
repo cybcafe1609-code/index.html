@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Only4CricketFans - Premium Live Prediction</title>
+    <style>
+        :root {
+            --stadium-blue: #0f172a;
+            --neon-gold: #fbbf24;
+            --pitch-green: #10b981;
+            --card-bg: #1e293b;
+            --text-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--stadium-blue);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 25px;
+            border: 2px solid var(--neon-gold);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--neon-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .timer-box {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--pitch-green);
+        }
+
+        .timer {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--neon-gold);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .radio-label {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #475569;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+
+        .radio-label:hover {
+            border-color: var(--neon-gold);
+            background: #1e293b;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--neon-gold), #d97706);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Control Panel Styles */
+        .admin-btn {
+            background: #475569;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            width: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Only4CricketFans</h1>
+    <div class="tagline">🎯 Premium Paid Prediction Contest</div>
+
+    <!-- Status Bar -->
+    <div class="timer-box">
+        <div>Contest: <span id="contest-status" style="color:var(--pitch-green); font-weight:bold;">LIVE</span></div>
+        <div>Q-Timer: <span id="q-timer" class="timer">10s</span></div>
+    </div>
+
+    <form id="predictionForm">
+        <!-- SECTION 1: User Verification -->
+        <div id="section1" class="section active">
+            <h3 style="color:var(--pitch-green)">Section 1: Entry & Payment Info</h3>
+            <div class="form-group">
+                <label>Aapka Full Name:</label>
+                <input type="text" id="username" required placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp Number (For Prize Transfer):</label>
+                <input type="text" id="phone" required placeholder="Enter WhatsApp Number">
+            </div>
+            <div class="form-group">
+                <label>Payment Transaction ID (Paid Token):</label>
+                <input type="text" id="txnid" required placeholder="Paste UPI Txn ID here">
+            </div>
+            <button type="button" onclick="startPrediction()">Start Live Predictions 🚀</button>
+        </div>
+
+        <!-- SECTION 2: 7 Prediction Questions (Dynamic 10s Timer) -->
+        <div id="section2" class="section">
+            <h3 style="color:var(--pitch-green)">Section 2: Match Predictions</h3>
+            
+            <!-- Q1: Multiple Choice -->
+            <div class="form-group quiz-q" id="qBox1">
+                <label>Q1: Aaj ka match kaunsi team jeetegi?</label>
+                <div class="options-grid">
+                    <label class="radio-label"><input type="radio" name="q1" value="Team A"> Team A</label>
+                    <label class="radio-label"><input type="radio" name="q1" value="Team B"> Team B</label>
+                </div>
+            </div>
+
+            <!-- Q2: Yes/No -->
+            <div class="form-group quiz-q" id="qBox2" style="display:none;">
+                <label>Q2: Kya aaj koi batsman century (100) banayega?</label>
+                <div class="options-grid">
+                    <label class="radio-label"><input type="radio" name="q2" value="Yes"> YES (Haan)</label>
+                    <label class="radio-label"><input type="radio" name="q2" value="No"> NO (Nahi)</label>
+                </div>
+            </div>
+
+            <!-- Q3: Short Answer -->
+            <div class="form-group quiz-q" id="qBox3" style="display:none;">
+                <label>Q3: Powerplay (Pehle 6 overs) mein kitne runs banenge? (Exact ya closest)</label>
+                <input type="text" id="q3" placeholder="Ex: 52">
+            </div>
+
+            <!-- Q4: Multiple Choice -->
+            <div class="form-group quiz-q" id="qBox4" style="display:none;">
+                <label>Q4: Match mein sabse zyada wickets kaun lega?</label>
+                <div class="options-grid">
+                    <label class="radio-label"><input type="radio" name="q4" value="Spinners"> Spinners</label>
+                    <label class="radio-label"><input type="radio" name="q4" value="Fast Bowlers"> Fast Bowlers</label>
+                </div>
+            </div>
+
+            <!-- Q5: Yes/No -->
+            <div class="form-group quiz-q" id="qBox5" style="display:none;">
+                <label>Q5: Kya 1st over mein wicket girega?</label>
+                <div class="options-grid">
+                    <label class="radio-label"><input type="radio" name="q5" value="Yes"> YES</label>
+                    <label class="radio-label"><input type="radio" name="q5" value="No"> NO</label>
+                </div>
+            </div>
+
+            <!-- Q6: Short Answer -->
+            <div class="form-group quiz-q" id="qBox6" style="display:none;">
+                <label>Q6: Is match ka 'Man of the Match' player kaun hoga?</label>
+                <input type="text" id="q6" placeholder="Player ka naam likhein">
+            </div>
+
+            <!-- Q7: Multiple Choice -->
+            <div class="form-group quiz-q" id="qBox7" style="display:none;">
+                <label>Q7: Aaj total kitne Sixes (6s) lagenge?</label>
+                <div class="options-grid">
+                    <label class="radio-label"><input type="radio" name="q7" value="Under 10"> 10 se kam</label>
+                    <label class="radio-label"><input type="radio" name="q7" value="10-15"> 10 se 15 ke beech</label>
+                    <label class="radio-label"><input type="radio" name="q7" value="15+"> 15 se zyada</label>
+                </div>
+            </div>
+
+            <button type="button" id="nextBtn" onclick="nextQuestion()">Next Question ➡️</button>
+        </div>
+    </form>
+</div>
+
+<!-- Manual Admin Control Panel for You -->
+<button class="admin-btn" onclick="toggleContest()">Admin: Close/Open Contest Manually</button>
+
+<script>
+    let currentQ = 1;
+    let timer;
+    let timeLeft = 10;
+    let isContestLive = true;
+
+    function startPrediction() {
+        if(!isContestLive) {
+            alert("Sorry! Yeh contest abhi closed hai.");
+            return;
+        }
+        if(document.getElementById('username').value == "" || document.getElementById('txnid').value == "") {
+            alert("Kripya poori details aur Payment ID bharein!");
+            return;
+        }
+        document.getElementById('section1').classList.remove('active');
+        document.getElementById('section2').classList.add('active');
+        startTimer();
+    }
+
+    function startTimer() {
+        timeLeft = 10;
+        document.getElementById('q-timer').innerText = timeLeft + "s";
+        clearInterval(timer);
+        
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('q-timer').innerText = timeLeft + "s";
+            
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                alert("Time Up! Agla question auto-load ho raha hai.");
+                nextQuestion();
+            }
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        // Hide current question
+        document.getElementById(`qBox${currentQ}`).style.display = 'none';
+        currentQ++;
+
+        if(currentQ <= 7) {
+            // Show next question
+            document.getElementById(`qBox${currentQ}`).style.display = 'block';
+            if(currentQ === 7) {
+                document.getElementById('nextBtn').innerText = "Submit Predictions 🏆";
+            }
+            startTimer();
+        } else {
+            clearInterval(timer);
+            document.getElementById('q-timer').innerText = "Done";
+            alert("Thank you! Aapke prediction save ho gaye hain. Match ke baad result dashboard par publish hoga.");
+            // Yahan aap apna database submit/sheet functions laga sakte hain
+            document.getElementById('predictionForm').reset();
+            location.reload();
+        }
+    }
+
+    // Admin function to control form entry manually before match starts
+    function toggleContest() {
+        isContestLive = !isContestLive;
+        document.getElementById('contest-status').innerText = isContestLive ? "LIVE" : "CLOSED";
+        document.getElementById('contest-status').style.color = isContestLive ? "#10b981" : "#ef4444";
+        alert("Contest status changed to: " + (isContestLive ? "LIVE" : "CLOSED"));
+    }
+</script>
+
+</body>
+</html>
