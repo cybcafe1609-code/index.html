@@ -141,14 +141,14 @@
             box-shadow: 0 5px 15px rgba(251, 191, 36, 0.4);
         }
 
-        /* Control Panel Styles */
         .admin-btn {
             background: #475569;
             color: white;
-            padding: 5px 10px;
+            padding: 8px 12px;
             font-size: 12px;
             width: auto;
             margin-top: 20px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -158,14 +158,12 @@
     <h1>Only4CricketFans</h1>
     <div class="tagline">🎯 Premium Paid Prediction Contest</div>
 
-    <!-- Status Bar -->
     <div class="timer-box">
         <div>Contest: <span id="contest-status" style="color:var(--pitch-green); font-weight:bold;">LIVE</span></div>
         <div>Q-Timer: <span id="q-timer" class="timer">10s</span></div>
     </div>
 
     <form id="predictionForm">
-        <!-- SECTION 1: User Verification -->
         <div id="section1" class="section active">
             <h3 style="color:var(--pitch-green)">Section 1: Entry & Payment Info</h3>
             <div class="form-group">
@@ -183,11 +181,9 @@
             <button type="button" onclick="startPrediction()">Start Live Predictions 🚀</button>
         </div>
 
-        <!-- SECTION 2: 7 Prediction Questions (Dynamic 10s Timer) -->
         <div id="section2" class="section">
             <h3 style="color:var(--pitch-green)">Section 2: Match Predictions</h3>
             
-            <!-- Q1: Multiple Choice -->
             <div class="form-group quiz-q" id="qBox1">
                 <label>Q1: Aaj ka match kaunsi team jeetegi?</label>
                 <div class="options-grid">
@@ -196,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- Q2: Yes/No -->
             <div class="form-group quiz-q" id="qBox2" style="display:none;">
                 <label>Q2: Kya aaj koi batsman century (100) banayega?</label>
                 <div class="options-grid">
@@ -205,13 +200,11 @@
                 </div>
             </div>
 
-            <!-- Q3: Short Answer -->
             <div class="form-group quiz-q" id="qBox3" style="display:none;">
                 <label>Q3: Powerplay (Pehle 6 overs) mein kitne runs banenge? (Exact ya closest)</label>
                 <input type="text" id="q3" placeholder="Ex: 52">
             </div>
 
-            <!-- Q4: Multiple Choice -->
             <div class="form-group quiz-q" id="qBox4" style="display:none;">
                 <label>Q4: Match mein sabse zyada wickets kaun lega?</label>
                 <div class="options-grid">
@@ -220,7 +213,6 @@
                 </div>
             </div>
 
-            <!-- Q5: Yes/No -->
             <div class="form-group quiz-q" id="qBox5" style="display:none;">
                 <label>Q5: Kya 1st over mein wicket girega?</label>
                 <div class="options-grid">
@@ -229,13 +221,11 @@
                 </div>
             </div>
 
-            <!-- Q6: Short Answer -->
             <div class="form-group quiz-q" id="qBox6" style="display:none;">
                 <label>Q6: Is match ka 'Man of the Match' player kaun hoga?</label>
                 <input type="text" id="q6" placeholder="Player ka naam likhein">
             </div>
 
-            <!-- Q7: Multiple Choice -->
             <div class="form-group quiz-q" id="qBox7" style="display:none;">
                 <label>Q7: Aaj total kitne Sixes (6s) lagenge?</label>
                 <div class="options-grid">
@@ -250,21 +240,28 @@
     </form>
 </div>
 
-<!-- Manual Admin Control Panel for You -->
 <button class="admin-btn" onclick="toggleContest()">Admin: Close/Open Contest Manually</button>
 
 <script>
+    // ⚠️ APNA APPS SCRIPT WEB APP URL NICHE PASTE KAREIN
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0oyCqTgsQr7b0yoCi0A7boK4aPfBMyLgI7QmkcTtRNtBXv5JYuRYUEoZuPROfEx9W/exec";
+
     let currentQ = 1;
     let timer;
     let timeLeft = 10;
     let isContestLive = true;
+    let answersData = {};
 
     function startPrediction() {
         if(!isContestLive) {
             alert("Sorry! Yeh contest abhi closed hai.");
             return;
         }
-        if(document.getElementById('username').value == "" || document.getElementById('txnid').value == "") {
+        answersData.username = document.getElementById('username').value;
+        answersData.phone = document.getElementById('phone').value;
+        answersData.txnid = document.getElementById('txnid').value;
+
+        if(answersData.username == "" || answersData.phone == "" || answersData.txnid == "") {
             alert("Kripya poori details aur Payment ID bharein!");
             return;
         }
@@ -284,19 +281,27 @@
             
             if(timeLeft <= 0) {
                 clearInterval(timer);
-                alert("Time Up! Agla question auto-load ho raha hai.");
                 nextQuestion();
             }
         }, 1000);
     }
 
+    function saveCurrentAnswer() {
+        if (currentQ === 1 || currentQ === 2 || currentQ === 4 || currentQ === 5 || currentQ === 7) {
+            let selected = document.querySelector(`input[name="q${currentQ}"]:checked`);
+            answersData[`q${currentQ}`] = selected ? selected.value : "No Answer";
+        } else if (currentQ === 3 || currentQ === 6) {
+            let typed = document.getElementById(`q${currentQ}`).value;
+            answersData[`q${currentQ}`] = typed ? typed : "No Answer";
+        }
+    }
+
     function nextQuestion() {
-        // Hide current question
+        saveCurrentAnswer();
         document.getElementById(`qBox${currentQ}`).style.display = 'none';
         currentQ++;
 
         if(currentQ <= 7) {
-            // Show next question
             document.getElementById(`qBox${currentQ}`).style.display = 'block';
             if(currentQ === 7) {
                 document.getElementById('nextBtn').innerText = "Submit Predictions 🏆";
@@ -304,15 +309,26 @@
             startTimer();
         } else {
             clearInterval(timer);
-            document.getElementById('q-timer').innerText = "Done";
-            alert("Thank you! Aapke prediction save ho gaye hain. Match ke baad result dashboard par publish hoga.");
-            // Yahan aap apna database submit/sheet functions laga sakte hain
-            document.getElementById('predictionForm').reset();
-            location.reload();
+            document.getElementById('q-timer').innerText = "Submitting...";
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').innerText = "Please Wait...";
+            
+            // Send data to Google Sheet
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(answersData)
+            }).then(() => {
+                alert("Thank you! Aapke prediction live Google Sheet mein save ho gaye hain.");
+                location.reload();
+            }).catch(err => {
+                alert("Data submit karne mein koi issue aaya, kripya check karein!");
+                console.error(err);
+            });
         }
     }
 
-    // Admin function to control form entry manually before match starts
     function toggleContest() {
         isContestLive = !isContestLive;
         document.getElementById('contest-status').innerText = isContestLive ? "LIVE" : "CLOSED";
