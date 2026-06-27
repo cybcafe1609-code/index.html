@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Only4CricketFans - Live Prediction</title>
+    <title>Live Prediction Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -13,20 +13,30 @@
             --dark: #0a1128;
             --light: #ffffff;
             --danger: #ff4d4d;
+            --success: #2ecc71;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--dark); color: var(--light); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
         .container { width: 100%; max-width: 500px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 2px solid var(--primary); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
         .logo-area { text-align: center; margin-bottom: 20px; }
         .logo-area h1 { font-size: 26px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .logo-area p { font-size: 12px; color: #ccc; }
+        
         .card { display: none; }
         .card.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Payment Area Styles */
+        .payment-box { background: rgba(255,255,255,0.07); border: 1px dashed var(--primary); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; }
+        .qr-img { width: 160px; height: 160px; object-fit: contain; background: white; padding: 5px; border-radius: 8px; margin: 10px auto; display: block; }
+        .upi-click-box { display: flex; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px 12px; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--primary); }
         .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); border-radius: 8px; color: white; font-size: 15px; outline: none; }
         .form-group input:focus { border-color: var(--primary); }
+        
         .timer-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255, 204, 0, 0.1); padding: 10px 15px; border-radius: 10px; border-left: 5px solid var(--primary); }
         .timer { font-size: 18px; font-weight: bold; color: var(--primary); }
         .q-text { font-size: 18px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
@@ -36,8 +46,9 @@
         .opt-btn.selected { background: var(--primary); color: var(--dark); font-weight: bold; }
         .text-ans { width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); border-radius: 10px; color: white; font-size: 16px; margin-bottom: 20px; outline: none; }
         .text-ans:focus { border-color: var(--primary); }
+        
         .btn { width: 100%; background: var(--primary); color: var(--dark); border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
-        .error-msg { color: var(--danger); font-size: 13px; margin-bottom: 10px; display: none; font-weight: 600; }
+        .error-msg { color: var(--danger); font-size: 12px; margin-top: 4px; font-weight: 600; display: none; }
         .loader { text-align: center; padding: 30px 0; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -46,46 +57,69 @@
 <body>
 
 <div class="container">
+    <!-- Configuration Driven Header -->
     <div class="logo-area">
-        <h1>Only4CricketFans</h1>
-        <p>Live Match Prediction Center</p>
+        <h1 id="appBrandName">Loading...</h1>
+        <p id="appSubHeading">Please wait...</p>
     </div>
 
+    <!-- Loader -->
     <div id="loaderScreen" class="card active">
         <div class="loader">
             <div class="spinner"></div>
-            <p id="loadingText">Checking Contest Status...</p>
+            <p id="loadingText">Checking platform setup...</p>
         </div>
     </div>
 
+    <!-- Contest Closed Screen -->
     <div id="closedScreen" class="card" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-circle-xmark" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;"></i>
         <h2>Contest Closed!</h2>
         <p style="color: #ccc; margin-top: 10px; font-size: 14px;">Prediction submissions are currently disabled for this match.</p>
     </div>
 
+    <!-- Auth & Payment Screen -->
     <div id="authScreen" class="card">
+        <!-- Dynamic Payment Component -->
+        <div class="payment-box" id="paymentSection" style="display: none;">
+            <span style="font-size: 13px; font-weight: 600; color: var(--primary);">Scan QR or Use UPI to Pay Entry Fee</span>
+            <img id="paymentQr" class="qr-img" src="" alt="Payment QR Code">
+            <div class="upi-click-box" onclick="copyUpiId()">
+                <span id="upiIdText" style="color: #fff;"></span>
+                <span style="color: var(--primary); font-size: 11px;"><i class="fa-regular fa-copy"></i> COPY</span>
+            </div>
+            <div id="copyToast" style="font-size: 11px; color: var(--success); margin-top: 4px; display: none;">UPI ID Copied Successfully!</div>
+        </div>
+
         <form id="startForm">
             <div class="form-group"><label><i class="fa-solid fa-user"></i> Full Name</label><input type="text" id="userName" required></div>
             <div class="form-group"><label><i class="fa-solid fa-phone"></i> WhatsApp Number</label><input type="tel" id="userPhone" required></div>
-            <div class="form-group"><label><i class="fa-solid fa-receipt"></i> Transaction ID (TxnID)</label><input type="text" id="userTxn" required></div>
+            
+            <div class="form-group">
+                <label><i class="fa-solid fa-receipt"></i> Transaction ID (12-Digit TxnID)</label>
+                <input type="text" id="userTxn" autocomplete="off" required placeholder="Enter 12 digit UPI Ref / UTR No.">
+                <div id="txnValidationError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Invalid Txn ID! Must be exactly 12 digits.</div>
+            </div>
+            
             <div class="form-group"><label><i class="fa-brands fa-telegram"></i> Telegram Username</label><input type="text" id="userTelegram" required placeholder="@username"></div>
             <button type="submit" class="btn" style="margin-top: 10px;">Start Prediction</button>
         </form>
     </div>
 
+    <!-- Quiz Panel -->
     <div id="quizScreen" class="card">
         <div class="timer-box">
             <span id="qNumberText" style="font-weight: 600;">Question 1</span>
             <span class="timer"><i class="fa-solid fa-clock"></i> <span id="timeLeft">00</span>s</span>
         </div>
         <div id="questionContainer"></div>
-        <div id="validationError" class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> This question is required!</div>
+        <div id="validationError" class="error-msg" style="margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> This question is required!</div>
         <button id="nextBtn" class="btn">Next Question</button>
     </div>
 
+    <!-- Success Screen -->
     <div id="successScreen" class="card" style="text-align: center; padding: 20px 0;">
-        <i class="fa-solid fa-circle-check" style="font-size: 60px; color: #2ecc71; margin-bottom: 15px;"></i>
+        <i class="fa-solid fa-circle-check" style="font-size: 60px; color: var(--success); margin-bottom: 15px;"></i>
         <h2>Prediction Submitted!</h2>
         <p style="color: #ccc; margin-top: 10px; font-size: 14px;">Your responses have been locked in successfully. Good luck!</p>
     </div>
@@ -93,13 +127,14 @@
 
 <script>
     // CRITICAL: Yahan apna deployed Web App URL paste karein
-    const API_URL = "https://script.google.com/macros/s/AKfycbxz3iotHtdNa12k4GVi_OGbFjTau1K12rShCKR6e6R854jSrs_UxW60R7RnsRN6TKrF/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyT6WYBZZih_QTMhn8jkX4KBrHT7Pu0ZIYzmsMXUjfifys1ns3an9qwFtujiAtw38ka/exec";
 
     let activeQuestions = [];
     let currentIdx = 0;
     let userAnswers = { "1":"No Answer", "2":"No Answer", "3":"No Answer", "4":"No Answer", "5":"No Answer", "6":"No Answer", "7":"No Answer", "BONUS":"No Answer" };
     let selectedAnswer = "";
     let totalStartTime, questionTimerLoop, questionTimeLeft = 0;
+    let targetUpiStr = "";
 
     const loaderScreen = document.getElementById('loaderScreen');
     const closedScreen = document.getElementById('closedScreen');
@@ -108,15 +143,36 @@
     const successScreen = document.getElementById('successScreen');
     const loadingText = document.getElementById('loadingText');
     const validationError = document.getElementById('validationError');
+    const txnValidationError = document.getElementById('txnValidationError');
 
-    // On Load: Check Status & Fetch Sorted Questions
+    // On Load: Setup configs and fetch content
     window.addEventListener('DOMContentLoaded', () => {
         fetch(API_URL)
             .then(res => res.json())
             .then(data => {
                 if(data.status === "CLOSED" || !data.questions || data.questions.length === 0) {
+                    document.getElementById('appBrandName').innerText = "Only4CricketFans";
+                    document.getElementById('appSubHeading').innerText = "Match Updates";
                     switchScreen(closedScreen);
                 } else {
+                    // Inject app configuration variables dynamically
+                    document.getElementById('appBrandName').innerText = data.appConfig.brandName;
+                    document.getElementById('appSubHeading').innerText = data.appConfig.subHeading;
+                    
+                    // Setup QR and UPI interface if available in configurations
+                    if (data.appConfig.upiId || data.appConfig.qrUrl) {
+                        document.getElementById('paymentSection').style.display = "block";
+                        if(data.appConfig.upiId) {
+                            targetUpiStr = data.appConfig.upiId;
+                            document.getElementById('upiIdText').innerText = data.appConfig.upiId;
+                        }
+                        if(data.appConfig.qrUrl) {
+                            document.getElementById('paymentQr').src = data.appConfig.qrUrl;
+                        } else {
+                            document.getElementById('paymentQr').style.display = "none";
+                        }
+                    }
+
                     activeQuestions = data.questions;
                     switchScreen(authScreen);
                 }
@@ -126,8 +182,31 @@
             });
     });
 
+    // Copy UPI feature
+    function copyUpiId() {
+        if(!targetUpiStr) return;
+        navigator.clipboard.writeText(targetUpiStr).then(() => {
+            const toast = document.getElementById('copyToast');
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2000);
+        });
+    }
+
+    // Submit user entry card validation logic
     document.getElementById('startForm').addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        const txnInput = document.getElementById('userTxn').value.trim();
+        // Strict Validation Check: Continuous 12 digits or alphanumeric tracking codes
+        const txnPattern = /^[a-zA-Z0-9]{12}$/;
+        
+        if (!txnPattern.test(txnInput)) {
+            txnValidationError.style.display = "block";
+            document.getElementById('userTxn').focus();
+            return;
+        }
+        
+        txnValidationError.style.display = "none";
         totalStartTime = new Date();
         switchScreen(quizScreen);
         loadQuestion();
@@ -183,7 +262,6 @@
         validationError.style.display = "none";
     }
 
-    // Next Button Click Event with Required Validation
     document.getElementById('nextBtn').addEventListener('click', () => {
         const currentQ = activeQuestions[currentIdx];
         
@@ -203,7 +281,6 @@
         loadQuestion();
     });
 
-    // Auto move triggers only when timer hits 0 (ignores required fields to bypass lock)
     function autoMoveToNext() {
         saveCurrentAnswer(true);
         currentIdx++;
