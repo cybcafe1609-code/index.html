@@ -29,7 +29,6 @@
         
         /* Payment Area Styles */
         .payment-box { background: rgba(255,255,255,0.07); border: 1px dashed var(--primary); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; }
-        .qr-img { width: 160px; height: 160px; object-fit: contain; background: white; padding: 5px; border-radius: 8px; margin: 10px auto; display: block; }
         .upi-click-box { display: flex; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px 12px; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
         
         .form-group { margin-bottom: 15px; }
@@ -48,6 +47,7 @@
         .text-ans:focus { border-color: var(--primary); }
         
         .btn { width: 100%; background: var(--primary); color: var(--dark); border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
+        .pay-btn { display: inline-block; text-decoration: none; background: #2ecc71; color: white; margin-bottom: 15px; width: auto; padding: 10px 25px; font-size: 15px; text-transform: uppercase; border-radius: 10px; font-weight: bold; }
         .error-msg { color: var(--danger); font-size: 12px; margin-top: 4px; font-weight: 600; display: none; }
         .loader { text-align: center; padding: 30px 0; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; margin: 0 auto 15px; }
@@ -57,13 +57,11 @@
 <body>
 
 <div class="container">
-    <!-- Configuration Driven Header -->
     <div class="logo-area">
         <h1 id="appBrandName">Loading...</h1>
         <p id="appSubHeading">Please wait...</p>
     </div>
 
-    <!-- Loader -->
     <div id="loaderScreen" class="card active">
         <div class="loader">
             <div class="spinner"></div>
@@ -71,22 +69,25 @@
         </div>
     </div>
 
-    <!-- Contest Closed Screen -->
     <div id="closedScreen" class="card" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-circle-xmark" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;"></i>
         <h2>Contest Closed!</h2>
         <p style="color: #ccc; margin-top: 10px; font-size: 14px;">Prediction submissions are currently disabled for this match.</p>
     </div>
 
-    <!-- Auth & Payment Screen -->
     <div id="authScreen" class="card">
-        <!-- Dynamic Payment Component -->
         <div class="payment-box" id="paymentSection" style="display: none;">
-            <span style="font-size: 13px; font-weight: 600; color: var(--primary);">Scan QR or Use UPI to Pay Entry Fee</span>
-            <img id="paymentQr" class="qr-img" src="" alt="Payment QR Code">
+            <span style="font-size: 14px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 12px;">
+                <i class="fa-solid fa-wallet"></i> Pay Entry Fee to Participate
+            </span>
+            
+            <a href="#" id="payNowBtn" class="pay-btn">
+                <i class="fa-solid fa-bolt"></i> Pay Now
+            </a>
+
             <div class="upi-click-box" onclick="copyUpiId()">
                 <span id="upiIdText" style="color: #fff;"></span>
-                <span style="color: var(--primary); font-size: 11px;"><i class="fa-regular fa-copy"></i> COPY</span>
+                <span style="color: var(--primary); font-size: 11px;"><i class="fa-regular fa-copy"></i> COPY UPI</span>
             </div>
             <div id="copyToast" style="font-size: 11px; color: var(--success); margin-top: 4px; display: none;">UPI ID Copied Successfully!</div>
         </div>
@@ -106,7 +107,6 @@
         </form>
     </div>
 
-    <!-- Quiz Panel -->
     <div id="quizScreen" class="card">
         <div class="timer-box">
             <span id="qNumberText" style="font-weight: 600;">Question 1</span>
@@ -117,7 +117,6 @@
         <button id="nextBtn" class="btn">Next Question</button>
     </div>
 
-    <!-- Success Screen -->
     <div id="successScreen" class="card" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-circle-check" style="font-size: 60px; color: var(--success); margin-bottom: 15px;"></i>
         <h2>Prediction Submitted!</h2>
@@ -126,8 +125,8 @@
 </div>
 
 <script>
-    // CRITICAL: Yahan apna deployed Web App URL paste karein
-    const API_URL = "https://script.google.com/macros/s/AKfycbyT6WYBZZih_QTMhn8jkX4KBrHT7Pu0ZIYzmsMXUjfifys1ns3an9qwFtujiAtw38ka/exec";
+    // Deployed Web App URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxz4ZjjIuGxsQknquX0IuTcvmPZ1BiCIrzy0wXjHnMDP1bMrNLkOnAFQAsveErvAb5q/exec";
 
     let activeQuestions = [];
     let currentIdx = 0;
@@ -155,21 +154,17 @@
                     document.getElementById('appSubHeading').innerText = "Match Updates";
                     switchScreen(closedScreen);
                 } else {
-                    // Inject app configuration variables dynamically
                     document.getElementById('appBrandName').innerText = data.appConfig.brandName;
                     document.getElementById('appSubHeading').innerText = data.appConfig.subHeading;
                     
-                    // Setup QR and UPI interface if available in configurations
-                    if (data.appConfig.upiId || data.appConfig.qrUrl) {
+                    if (data.appConfig.upiId || data.appConfig.upiLink) {
                         document.getElementById('paymentSection').style.display = "block";
                         if(data.appConfig.upiId) {
                             targetUpiStr = data.appConfig.upiId;
                             document.getElementById('upiIdText').innerText = data.appConfig.upiId;
                         }
-                        if(data.appConfig.qrUrl) {
-                            document.getElementById('paymentQr').src = data.appConfig.qrUrl;
-                        } else {
-                            document.getElementById('paymentQr').style.display = "none";
+                        if(data.appConfig.upiLink) {
+                            document.getElementById('payNowBtn').href = data.appConfig.upiLink;
                         }
                     }
 
@@ -182,7 +177,6 @@
             });
     });
 
-    // Copy UPI feature
     function copyUpiId() {
         if(!targetUpiStr) return;
         navigator.clipboard.writeText(targetUpiStr).then(() => {
@@ -192,12 +186,10 @@
         });
     }
 
-    // Submit user entry card validation logic
     document.getElementById('startForm').addEventListener('submit', (e) => {
         e.preventDefault();
         
         const txnInput = document.getElementById('userTxn').value.trim();
-        // Strict Validation Check: Continuous 12 digits or alphanumeric tracking codes
         const txnPattern = /^[a-zA-Z0-9]{12}$/;
         
         if (!txnPattern.test(txnInput)) {
