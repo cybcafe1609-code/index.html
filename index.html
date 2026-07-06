@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Your existing styles - keeping them same */
         * {
             margin: 0;
             padding: 0;
@@ -746,6 +747,20 @@
             border: 1px solid var(--border-color);
         }
 
+        .debug-info {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -890,9 +905,9 @@
                 <label><i class="fas fa-receipt"></i> <span id="labelTxn">Transaction ID</span> <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="fas fa-hashtag input-icon"></i>
-                    <input type="text" id="userTxn" placeholder="12-digit UPI Ref / UTR" maxlength="12" required autocomplete="off">
+                    <input type="text" id="userTxn" placeholder="Enter UPI Ref ID / UTR" required autocomplete="off">
                 </div>
-                <div class="error-text" id="txnValidationError"><i class="fas fa-exclamation-circle"></i> <span id="txnErrorText">Must be exactly 12 characters</span></div>
+                <div class="error-text" id="txnValidationError"><i class="fas fa-exclamation-circle"></i> <span id="txnErrorText">Please enter a valid Transaction ID</span></div>
             </div>
             <div class="form-group">
                 <label><i class="fab fa-telegram"></i> <span id="labelTelegram">Telegram Username</span> <span class="required">*</span></label>
@@ -901,7 +916,10 @@
                     <input type="text" id="userTelegram" placeholder="@username" required autocomplete="off">
                 </div>
             </div>
-            <button type="submit" class="btn-primary">
+            
+            <div id="debugInfo" class="debug-info"></div>
+            
+            <button type="submit" class="btn-primary" id="submitBtn">
                 <i class="fas fa-play"></i> <span id="startBtnText">Start Prediction</span>
             </button>
         </form>
@@ -962,7 +980,7 @@
     // ============================================================
     
     const APP_CONFIG = {
-        // API Configuration
+        // API Configuration - IMPORTANT: Use your deployed Web App URL
         API_URL: "https://script.google.com/macros/s/AKfycbz7jw7evWb9pOxaf90Bl9ky-9bfoFy348LU4s0HkaQf0f2KZ5ixYZWNZlOs0oFxY_pp/exec",
         
         // Branding
@@ -986,7 +1004,7 @@
         LABEL_PHONE: "WhatsApp Number",
         LABEL_TXN: "Transaction ID",
         LABEL_TELEGRAM: "Telegram Username",
-        TXN_ERROR_TEXT: "Must be exactly 12 characters",
+        TXN_ERROR_TEXT: "Please enter a valid Transaction ID",
         START_BTN_TEXT: "Start Prediction",
         
         // Quiz
@@ -1016,7 +1034,8 @@
         
         // Errors
         CONNECTION_ERROR: "Unable to connect. Please check your internet connection.",
-        FETCH_ERROR: "Failed to load. Please refresh."
+        FETCH_ERROR: "Failed to load. Please refresh.",
+        SUBMIT_ERROR: "Failed to submit. Please try again."
     };
 
     // ============================================================
@@ -1034,7 +1053,8 @@
         totalQuestions: 0,
         quizData: null,
         isCountdownComplete: false,
-        isContestActive: false
+        isContestActive: false,
+        isSubmitting: false
     };
 
     // ============================================================
@@ -1079,6 +1099,7 @@
         labelTelegram: document.getElementById('labelTelegram'),
         txnErrorText: document.getElementById('txnErrorText'),
         startBtnText: document.getElementById('startBtnText'),
+        submitBtn: document.getElementById('submitBtn'),
         
         questionLabel: document.getElementById('questionLabel'),
         validationText: document.getElementById('validationText'),
@@ -1107,7 +1128,9 @@
         userPhone: document.getElementById('userPhone'),
         userTxn: document.getElementById('userTxn'),
         userTelegram: document.getElementById('userTelegram'),
-        txnValidationError: document.getElementById('txnValidationError')
+        txnValidationError: document.getElementById('txnValidationError'),
+        
+        debugInfo: document.getElementById('debugInfo')
     };
 
     // ============================================================
@@ -1204,18 +1227,28 @@
             showScreen(el.loader);
             updateLoader(APP_CONFIG.LOADING_TITLE, APP_CONFIG.LOADING_TEXT);
             
+            // Clear cache first to avoid issues
             const cachedData = getFromStorage('contestData');
             const cachedTime = getFromStorage('fetchTime');
             const now = Date.now();
             
-            if (cachedData && cachedTime && (now - cachedTime < 30000)) {
+            // Use cache only if less than 10 seconds old
+            if (cachedData && cachedTime && (now - cachedTime < 10000)) {
                 console.log('Using cached data');
                 processContestData(cachedData);
                 return;
             }
             
-            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 10000);
+            console.log('Fetching fresh data from:', APP_CONFIG.API_URL);
+            
+            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 15000);
+            
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            
             const data = await response.json();
+            console.log('API Response:', data);
             
             saveToStorage('contestData', data);
             saveToStorage('fetchTime', now);
@@ -1224,27 +1257,43 @@
             
         } catch (error) {
             console.error('Init error:', error);
+            showDebug('Error: ' + error.message);
+            
             const cachedData = getFromStorage('contestData');
             if (cachedData) {
                 console.log('Using cached data due to error');
                 processContestData(cachedData);
                 return;
             }
+            
             updateLoader('Connection Error', APP_CONFIG.CONNECTION_ERROR);
+            
+            // Retry after 5 seconds
+            setTimeout(() => {
+                if (document.getElementById('loaderScreen').classList.contains('active')) {
+                    init();
+                }
+            }, 5000);
         }
     }
 
     function processContestData(data) {
+        console.log('Processing data:', data);
+        
         if (data.status === 'CLOSED') {
             showScreen(el.closed);
             return;
         }
         
-        el.brandName.textContent = data.appConfig?.brandName || APP_CONFIG.BRAND_NAME;
-        el.subHeading.textContent = data.appConfig?.subHeading || APP_CONFIG.SUB_HEADING;
+        // Update branding
+        if (data.appConfig) {
+            el.brandName.textContent = data.appConfig.brandName || APP_CONFIG.BRAND_NAME;
+            el.subHeading.textContent = data.appConfig.subHeading || APP_CONFIG.SUB_HEADING;
+        }
         
         state.quizData = data;
         
+        // Check if contest is waiting to start
         if (data.status === 'WAITING' && data.appConfig?.contestStartTime) {
             const startTime = new Date(data.appConfig.contestStartTime).getTime();
             const now = Date.now();
@@ -1255,20 +1304,29 @@
             }
         }
         
+        // Check if questions are available
         if (data.questions && data.questions.length > 0) {
             state.questions = data.questions;
             state.totalQuestions = data.questions.length;
             state.isContestActive = true;
             setupPayment(data.appConfig);
             showScreen(el.auth);
+            showDebug('Loaded ' + data.questions.length + ' questions');
         } else {
+            console.warn('No questions available');
             showScreen(el.closed);
         }
     }
 
     function fetchWithTimeout(url, timeout) {
         return Promise.race([
-            fetch(url),
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                mode: 'cors'
+            }),
             new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Request timeout')), timeout)
             )
@@ -1280,6 +1338,12 @@
         el.loadingText.textContent = text;
     }
 
+    function showDebug(message) {
+        el.debugInfo.textContent = '🔍 ' + message;
+        el.debugInfo.classList.add('show');
+        console.log('Debug:', message);
+    }
+
     // ============================================================
     // COUNTDOWN SYSTEM
     // ============================================================
@@ -1288,11 +1352,6 @@
         showScreen(el.countdown);
         const totalDuration = startTime - Date.now();
         let lastUpdate = -1;
-        
-        saveToStorage('countdownData', {
-            startTime: startTime,
-            data: data
-        });
         
         function updateCountdown() {
             const now = Date.now();
@@ -1424,19 +1483,43 @@
     }
 
     // ============================================================
-    // FORM SUBMISSION
+    // FORM SUBMISSION - FIXED
     // ============================================================
     
     el.startForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Validate all fields
+        const name = el.userName.value.trim();
+        const phone = el.userPhone.value.trim();
         const txn = el.userTxn.value.trim();
-        if (!/^[a-zA-Z0-9]{12}$/.test(txn)) {
+        const telegram = el.userTelegram.value.trim();
+        
+        if (!name || name.length < 2) {
+            alert('Please enter your full name');
+            el.userName.focus();
+            return;
+        }
+        
+        if (!phone || phone.length < 10) {
+            alert('Please enter a valid WhatsApp number');
+            el.userPhone.focus();
+            return;
+        }
+        
+        if (!txn || txn.length < 6) {
             el.userTxn.classList.add('error');
             el.txnValidationError.classList.add('show');
             el.userTxn.focus();
             return;
         }
+        
+        if (!telegram || !telegram.startsWith('@')) {
+            alert('Please enter your Telegram username starting with @');
+            el.userTelegram.focus();
+            return;
+        }
+        
         el.userTxn.classList.remove('error');
         el.txnValidationError.classList.remove('show');
         
@@ -1570,10 +1653,13 @@
     }
 
     // ============================================================
-    // SUBMIT ALL
+    // SUBMIT ALL - FIXED
     // ============================================================
     
     function submitAll() {
+        if (state.isSubmitting) return;
+        state.isSubmitting = true;
+        
         showScreen(el.loader);
         updateLoader('Submitting Predictions', 'Locking in your answers...');
         
@@ -1590,14 +1676,26 @@
             timestamp: new Date().toISOString()
         };
         
+        console.log('Submitting payload:', payload);
+        
         fetch(APP_CONFIG.API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload),
+            mode: 'cors'
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(result => {
+            console.log('Submit result:', result);
+            
             if (result.status === 'DUPLICATE') {
+                state.isSubmitting = false;
                 showScreen(el.auth);
                 alert('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE));
                 return;
@@ -1606,15 +1704,57 @@
             if (result.status === 'SUCCESS') {
                 showSuccess(formattedTime);
                 clearStorage();
-            } else {
+                state.isSubmitting = false;
+            } else if (result.status === 'ERROR') {
                 throw new Error(result.message || 'Submission failed');
+            } else {
+                throw new Error('Unknown response: ' + JSON.stringify(result));
             }
         })
         .catch(error => {
             console.error('Submit error:', error);
-            showSuccess(formattedTime);
-            clearStorage();
+            state.isSubmitting = false;
+            
+            // Try one more time with retry
+            retrySubmit(payload, formattedTime);
         });
+    }
+
+    function retrySubmit(payload, formattedTime, attempt = 1) {
+        if (attempt > 3) {
+            alert('❌ ' + APP_CONFIG.SUBMIT_ERROR + '\nPlease contact support with your Transaction ID.');
+            showScreen(el.auth);
+            return;
+        }
+        
+        updateLoader('Retrying...', `Attempt ${attempt} of 3`);
+        
+        setTimeout(() => {
+            fetch(APP_CONFIG.API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload),
+                mode: 'cors'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'SUCCESS') {
+                    showSuccess(formattedTime);
+                    clearStorage();
+                } else if (result.status === 'DUPLICATE') {
+                    showScreen(el.auth);
+                    alert('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE));
+                } else {
+                    retrySubmit(payload, formattedTime, attempt + 1);
+                }
+            })
+            .catch(() => {
+                retrySubmit(payload, formattedTime, attempt + 1);
+            });
+        }, 2000);
     }
 
     function showSuccess(time) {
@@ -1667,15 +1807,35 @@
     // ============================================================
     
     let retryCount = 0;
-    const maxRetries = 3;
+    const maxRetries = 5;
 
     function retryInit() {
         if (retryCount < maxRetries) {
             retryCount++;
             updateLoader('Retrying...', `Attempt ${retryCount} of ${maxRetries}`);
-            setTimeout(init, 2000);
+            setTimeout(init, 3000);
         } else {
             updateLoader('Connection Failed', APP_CONFIG.FETCH_ERROR);
+            // Show manual retry button
+            const manualRetry = document.createElement('button');
+            manualRetry.textContent = '🔄 Retry Now';
+            manualRetry.style.cssText = `
+                margin-top: 16px;
+                padding: 10px 24px;
+                background: var(--primary);
+                color: #000;
+                border: none;
+                border-radius: 8px;
+                font-weight: 700;
+                cursor: pointer;
+                font-size: 14px;
+            `;
+            manualRetry.onclick = function() {
+                retryCount = 0;
+                init();
+                this.remove();
+            };
+            document.querySelector('.loader-container').appendChild(manualRetry);
         }
     }
 
@@ -1692,6 +1852,7 @@
 
     console.log('🏏 Live Prediction Center loaded successfully!');
     console.log('📝 Edit APP_CONFIG at the top to change all text!');
+    console.log('🔧 API URL:', APP_CONFIG.API_URL);
 </script>
 </body>
 </html>
