@@ -815,7 +815,7 @@
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <span class="badge"><i class="fas fa-bolt"></i> LIVE</span>
+        <span class="badge"><i class="fas fa-bolt"></i> <span id="badgeText">LIVE</span></span>
         <h1 id="appBrandName">Loading...</h1>
         <p id="appSubHeading">Please wait...</p>
     </div>
@@ -838,7 +838,7 @@
     <div id="countdownScreen" class="card">
         <div class="countdown-container">
             <div class="countdown-icon"><i class="fas fa-clock"></i></div>
-            <h2>Match Starts In</h2>
+            <h2 id="countdownTitle">Match Starts In</h2>
             <p class="subtitle" id="countdownSubtitle">Get ready to make your predictions! 🏏</p>
             <div class="countdown-timer-wrapper">
                 <div class="countdown-timer" id="countdownDisplay">
@@ -858,51 +858,51 @@
     <div id="authScreen" class="card">
         <div id="paymentSection" style="display: none;">
             <div class="payment-box">
-                <div class="title"><i class="fas fa-wallet"></i> Pay Entry Fee</div>
+                <div class="title"><i class="fas fa-wallet"></i> <span id="paymentTitle">Pay Entry Fee</span></div>
                 <div class="fee-amount" id="feeDisplay">₹15</div>
                 <a href="#" id="payNowBtn" class="pay-btn" target="_blank">
-                    <i class="fas fa-bolt"></i> Pay Now
+                    <i class="fas fa-bolt"></i> <span id="payBtnText">Pay Now</span>
                 </a>
                 <div class="upi-box" onclick="copyUpiId()">
                     <span class="upi-id" id="upiIdText">Loading...</span>
-                    <span class="copy-btn"><i class="far fa-copy"></i> COPY</span>
+                    <span class="copy-btn"><i class="far fa-copy"></i> <span id="copyBtnText">COPY</span></span>
                 </div>
-                <div class="copy-toast" id="copyToast"><i class="fas fa-check-circle"></i> UPI ID Copied!</div>
+                <div class="copy-toast" id="copyToast"><i class="fas fa-check-circle"></i> <span id="copyToastText">UPI ID Copied!</span></div>
             </div>
         </div>
 
         <form id="startForm" novalidate>
             <div class="form-group">
-                <label><i class="fas fa-user"></i> Full Name <span class="required">*</span></label>
+                <label><i class="fas fa-user"></i> <span id="labelName">Full Name</span> <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" id="userName" placeholder="Enter your full name" required autocomplete="name">
                 </div>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-phone"></i> WhatsApp Number <span class="required">*</span></label>
+                <label><i class="fas fa-phone"></i> <span id="labelPhone">WhatsApp Number</span> <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="fas fa-phone input-icon"></i>
                     <input type="tel" id="userPhone" placeholder="Enter WhatsApp number" required autocomplete="tel">
                 </div>
             </div>
             <div class="form-group">
-                <label><i class="fas fa-receipt"></i> Transaction ID <span class="required">*</span></label>
+                <label><i class="fas fa-receipt"></i> <span id="labelTxn">Transaction ID</span> <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="fas fa-hashtag input-icon"></i>
                     <input type="text" id="userTxn" placeholder="12-digit UPI Ref / UTR" maxlength="12" required autocomplete="off">
                 </div>
-                <div class="error-text" id="txnValidationError"><i class="fas fa-exclamation-circle"></i> Must be exactly 12 characters</div>
+                <div class="error-text" id="txnValidationError"><i class="fas fa-exclamation-circle"></i> <span id="txnErrorText">Must be exactly 12 characters</span></div>
             </div>
             <div class="form-group">
-                <label><i class="fab fa-telegram"></i> Telegram Username <span class="required">*</span></label>
+                <label><i class="fab fa-telegram"></i> <span id="labelTelegram">Telegram Username</span> <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="fab fa-telegram input-icon"></i>
                     <input type="text" id="userTelegram" placeholder="@username" required autocomplete="off">
                 </div>
             </div>
             <button type="submit" class="btn-primary">
-                <i class="fas fa-play"></i> Start Prediction
+                <i class="fas fa-play"></i> <span id="startBtnText">Start Prediction</span>
             </button>
         </form>
     </div>
@@ -911,7 +911,7 @@
     <div id="quizScreen" class="card">
         <div class="quiz-header">
             <span class="q-number" id="qNumberText">
-                <i class="fas fa-question-circle"></i> Question 1
+                <i class="fas fa-question-circle"></i> <span id="questionLabel">Question 1</span>
             </span>
             <span class="timer" id="timerDisplay">
                 <span class="timer-icon"><i class="fas fa-clock"></i></span>
@@ -920,7 +920,7 @@
         </div>
         <div id="questionContainer"></div>
         <div class="validation-error" id="validationError">
-            <i class="fas fa-exclamation-triangle"></i> Please select an answer
+            <i class="fas fa-exclamation-triangle"></i> <span id="validationText">Please select an answer</span>
         </div>
         <button id="nextBtn" class="btn-primary">
             <span id="nextBtnText">Next Question</span>
@@ -932,12 +932,12 @@
     <div id="successScreen" class="card">
         <div class="success-container">
             <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-            <h2>🎉 Prediction Submitted!</h2>
-            <p>Your responses have been locked in successfully.</p>
+            <h2 id="successTitle">🎉 Prediction Submitted!</h2>
+            <p id="successSubtext">Your responses have been locked in successfully.</p>
             <div class="success-details">
-                <span>📋 Your entry has been recorded</span>
+                <span id="successDetail1">📋 Your entry has been recorded</span>
                 <span>⏰ <strong id="successTime">Time recorded</strong></span>
-                <span style="margin-top: 4px;">Good luck! 🏏</span>
+                <span style="margin-top: 4px;" id="successDetail2">Good luck! 🏏</span>
             </div>
         </div>
     </div>
@@ -946,11 +946,11 @@
     <div id="closedScreen" class="card">
         <div class="closed-container">
             <div class="closed-icon"><i class="fas fa-ban"></i></div>
-            <h2>Contest Closed</h2>
-            <p>Prediction submissions are currently disabled.</p>
+            <h2 id="closedTitle">Contest Closed</h2>
+            <p id="closedSubtext">Prediction submissions are currently disabled.</p>
             <div class="closed-details">
-                <span>📅 Stay tuned for the next contest!</span>
-                <span style="margin-top: 4px;">Follow us for updates 🏏</span>
+                <span id="closedDetail1">📅 Stay tuned for the next contest!</span>
+                <span style="margin-top: 4px;" id="closedDetail2">Follow us for updates 🏏</span>
             </div>
         </div>
     </div>
@@ -958,12 +958,67 @@
 
 <script>
     // ============================================================
-    // CONFIGURATION
+    // 🔥 CENTRALIZED CONFIGURATION - Edit all text here!
     // ============================================================
     
-    // IMPORTANT: Replace with your actual deployment URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbyMYJYMs2EOg_hw4g_3BW-T6bKvUbTJWV8ArkiLoJhc6NnKRy9048Uex36b4yBjrTzb/exec";
-    
+    const APP_CONFIG = {
+        // API Configuration
+        API_URL: "https://script.google.com/macros/s/AKfycby0coKGFKxMJm1uMVY1eOnVfZEQ5_xuYhhyVmUs5P3UPdv6ridMvr30BsIA5gDnCUKG/exec",
+        
+        // Branding
+        BRAND_NAME: "🏏 Cricket Predictions",
+        SUB_HEADING: "Live Match Prediction Center",
+        BADGE_TEXT: "LIVE",
+        
+        // Countdown
+        COUNTDOWN_TITLE: "Match Starts In",
+        COUNTDOWN_SUBTITLE: "Get ready to make your predictions! 🏏",
+        COUNTDOWN_WAITING: "Waiting for contest to begin...",
+        
+        // Payment
+        PAYMENT_TITLE: "Pay Entry Fee",
+        PAY_BTN_TEXT: "Pay Now",
+        COPY_BTN_TEXT: "COPY",
+        COPY_TOAST_TEXT: "UPI ID Copied!",
+        
+        // Form Labels
+        LABEL_NAME: "Full Name",
+        LABEL_PHONE: "WhatsApp Number",
+        LABEL_TXN: "Transaction ID",
+        LABEL_TELEGRAM: "Telegram Username",
+        TXN_ERROR_TEXT: "Must be exactly 12 characters",
+        START_BTN_TEXT: "Start Prediction",
+        
+        // Quiz
+        QUESTION_LABEL: "Question",
+        VALIDATION_TEXT: "Please select an answer",
+        NEXT_BTN_TEXT: "Next Question",
+        SUBMIT_BTN_TEXT: "Submit All",
+        
+        // Success
+        SUCCESS_TITLE: "🎉 Prediction Submitted!",
+        SUCCESS_SUBTEXT: "Your responses have been locked in successfully.",
+        SUCCESS_DETAIL1: "📋 Your entry has been recorded",
+        SUCCESS_DETAIL2: "Good luck! 🏏",
+        
+        // Closed
+        CLOSED_TITLE: "Contest Closed",
+        CLOSED_SUBTEXT: "Prediction submissions are currently disabled.",
+        CLOSED_DETAIL1: "📅 Stay tuned for the next contest!",
+        CLOSED_DETAIL2: "Follow us for updates 🏏",
+        
+        // Loading
+        LOADING_TITLE: "Initializing Platform",
+        LOADING_TEXT: "Setting up your prediction center...",
+        
+        // Duplicate Message
+        DUPLICATE_MESSAGE: "You have already submitted a prediction! Please contact support if you think this is a mistake.",
+        
+        // Errors
+        CONNECTION_ERROR: "Unable to connect. Please check your internet connection.",
+        FETCH_ERROR: "Failed to load. Please refresh."
+    };
+
     // ============================================================
     // STATE MANAGEMENT
     // ============================================================
@@ -996,16 +1051,49 @@
         
         brandName: document.getElementById('appBrandName'),
         subHeading: document.getElementById('appSubHeading'),
+        badgeText: document.getElementById('badgeText'),
         loadingTitle: document.getElementById('loadingTitle'),
         loadingText: document.getElementById('loadingText'),
         
-        countdownDisplay: document.getElementById('countdownDisplay'),
+        countdownTitle: document.getElementById('countdownTitle'),
+        countdownSubtitle: document.getElementById('countdownSubtitle'),
         countdownHours: document.getElementById('countdownHours'),
         countdownMinutes: document.getElementById('countdownMinutes'),
         countdownSeconds: document.getElementById('countdownSeconds'),
         countdownProgress: document.getElementById('countdownProgress'),
         countdownStatus: document.getElementById('countdownStatus'),
-        countdownSubtitle: document.getElementById('countdownSubtitle'),
+        
+        paymentTitle: document.getElementById('paymentTitle'),
+        payBtnText: document.getElementById('payBtnText'),
+        copyBtnText: document.getElementById('copyBtnText'),
+        copyToastText: document.getElementById('copyToastText'),
+        feeDisplay: document.getElementById('feeDisplay'),
+        upiIdText: document.getElementById('upiIdText'),
+        payNowBtn: document.getElementById('payNowBtn'),
+        copyToast: document.getElementById('copyToast'),
+        paymentSection: document.getElementById('paymentSection'),
+        
+        labelName: document.getElementById('labelName'),
+        labelPhone: document.getElementById('labelPhone'),
+        labelTxn: document.getElementById('labelTxn'),
+        labelTelegram: document.getElementById('labelTelegram'),
+        txnErrorText: document.getElementById('txnErrorText'),
+        startBtnText: document.getElementById('startBtnText'),
+        
+        questionLabel: document.getElementById('questionLabel'),
+        validationText: document.getElementById('validationText'),
+        nextBtnText: document.getElementById('nextBtnText'),
+        
+        successTitle: document.getElementById('successTitle'),
+        successSubtext: document.getElementById('successSubtext'),
+        successDetail1: document.getElementById('successDetail1'),
+        successDetail2: document.getElementById('successDetail2'),
+        successTime: document.getElementById('successTime'),
+        
+        closedTitle: document.getElementById('closedTitle'),
+        closedSubtext: document.getElementById('closedSubtext'),
+        closedDetail1: document.getElementById('closedDetail1'),
+        closedDetail2: document.getElementById('closedDetail2'),
         
         timerDisplay: document.getElementById('timerDisplay'),
         timeLeft: document.getElementById('timeLeft'),
@@ -1013,34 +1101,73 @@
         questionContainer: document.getElementById('questionContainer'),
         validationError: document.getElementById('validationError'),
         nextBtn: document.getElementById('nextBtn'),
-        nextBtnText: document.getElementById('nextBtnText'),
         
         startForm: document.getElementById('startForm'),
         userName: document.getElementById('userName'),
         userPhone: document.getElementById('userPhone'),
         userTxn: document.getElementById('userTxn'),
         userTelegram: document.getElementById('userTelegram'),
-        txnValidationError: document.getElementById('txnValidationError'),
-        
-        paymentSection: document.getElementById('paymentSection'),
-        upiIdText: document.getElementById('upiIdText'),
-        payNowBtn: document.getElementById('payNowBtn'),
-        copyToast: document.getElementById('copyToast'),
-        feeDisplay: document.getElementById('feeDisplay'),
-        
-        successTime: document.getElementById('successTime')
+        txnValidationError: document.getElementById('txnValidationError')
     };
 
     // ============================================================
-    // STORAGE HELPERS - Save data locally
+    // APPLY CONFIGURATION
+    // ============================================================
+    
+    function applyConfig() {
+        // Branding
+        el.brandName.textContent = APP_CONFIG.BRAND_NAME;
+        el.subHeading.textContent = APP_CONFIG.SUB_HEADING;
+        el.badgeText.textContent = APP_CONFIG.BADGE_TEXT;
+        
+        // Countdown
+        el.countdownTitle.textContent = APP_CONFIG.COUNTDOWN_TITLE;
+        el.countdownSubtitle.textContent = APP_CONFIG.COUNTDOWN_SUBTITLE;
+        
+        // Payment
+        el.paymentTitle.textContent = APP_CONFIG.PAYMENT_TITLE;
+        el.payBtnText.textContent = APP_CONFIG.PAY_BTN_TEXT;
+        el.copyBtnText.textContent = APP_CONFIG.COPY_BTN_TEXT;
+        el.copyToastText.textContent = APP_CONFIG.COPY_TOAST_TEXT;
+        
+        // Form
+        el.labelName.textContent = APP_CONFIG.LABEL_NAME;
+        el.labelPhone.textContent = APP_CONFIG.LABEL_PHONE;
+        el.labelTxn.textContent = APP_CONFIG.LABEL_TXN;
+        el.labelTelegram.textContent = APP_CONFIG.LABEL_TELEGRAM;
+        el.txnErrorText.textContent = APP_CONFIG.TXN_ERROR_TEXT;
+        el.startBtnText.textContent = APP_CONFIG.START_BTN_TEXT;
+        
+        // Quiz
+        el.questionLabel.textContent = APP_CONFIG.QUESTION_LABEL;
+        el.validationText.textContent = APP_CONFIG.VALIDATION_TEXT;
+        el.nextBtnText.textContent = APP_CONFIG.NEXT_BTN_TEXT;
+        
+        // Success
+        el.successTitle.textContent = APP_CONFIG.SUCCESS_TITLE;
+        el.successSubtext.textContent = APP_CONFIG.SUCCESS_SUBTEXT;
+        el.successDetail1.textContent = APP_CONFIG.SUCCESS_DETAIL1;
+        el.successDetail2.textContent = APP_CONFIG.SUCCESS_DETAIL2;
+        
+        // Closed
+        el.closedTitle.textContent = APP_CONFIG.CLOSED_TITLE;
+        el.closedSubtext.textContent = APP_CONFIG.CLOSED_SUBTEXT;
+        el.closedDetail1.textContent = APP_CONFIG.CLOSED_DETAIL1;
+        el.closedDetail2.textContent = APP_CONFIG.CLOSED_DETAIL2;
+        
+        // Loading
+        el.loadingTitle.textContent = APP_CONFIG.LOADING_TITLE;
+        el.loadingText.textContent = APP_CONFIG.LOADING_TEXT;
+    }
+
+    // ============================================================
+    // STORAGE HELPERS
     // ============================================================
     
     function saveToStorage(key, data) {
         try {
             localStorage.setItem('pred_' + key, JSON.stringify(data));
-        } catch (e) {
-            // Ignore storage errors
-        }
+        } catch (e) {}
     }
 
     function getFromStorage(key) {
@@ -1060,38 +1187,36 @@
                     localStorage.removeItem(key);
                 }
             });
-        } catch (e) {
-            // Ignore
-        }
+        } catch (e) {}
     }
 
     // ============================================================
     // INITIALIZATION
     // ============================================================
     
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function() {
+        applyConfig();
+        init();
+    });
 
     async function init() {
         try {
             showScreen(el.loader);
-            updateLoader('Loading Contest Data', 'Fetching latest contest information...');
+            updateLoader(APP_CONFIG.LOADING_TITLE, APP_CONFIG.LOADING_TEXT);
             
-            // Check if we have cached data
             const cachedData = getFromStorage('contestData');
             const cachedTime = getFromStorage('fetchTime');
             const now = Date.now();
             
-            // Use cache if less than 30 seconds old
             if (cachedData && cachedTime && (now - cachedTime < 30000)) {
                 console.log('Using cached data');
                 processContestData(cachedData);
                 return;
             }
             
-            const response = await fetchWithTimeout(API_URL, 10000);
+            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 10000);
             const data = await response.json();
             
-            // Cache the data
             saveToStorage('contestData', data);
             saveToStorage('fetchTime', now);
             
@@ -1099,33 +1224,27 @@
             
         } catch (error) {
             console.error('Init error:', error);
-            
-            // Try to use cached data on error
             const cachedData = getFromStorage('contestData');
             if (cachedData) {
                 console.log('Using cached data due to error');
                 processContestData(cachedData);
                 return;
             }
-            
-            updateLoader('Connection Error', 'Unable to connect. Please check your internet connection.');
+            updateLoader('Connection Error', APP_CONFIG.CONNECTION_ERROR);
         }
     }
 
     function processContestData(data) {
-        // Check if contest is closed
         if (data.status === 'CLOSED') {
             showScreen(el.closed);
             return;
         }
         
-        // Update branding
-        el.brandName.textContent = data.appConfig?.brandName || '🏏 Cricket Predictions';
-        el.subHeading.textContent = data.appConfig?.subHeading || 'Live Match Prediction Center';
+        el.brandName.textContent = data.appConfig?.brandName || APP_CONFIG.BRAND_NAME;
+        el.subHeading.textContent = data.appConfig?.subHeading || APP_CONFIG.SUB_HEADING;
         
         state.quizData = data;
         
-        // Check for countdown
         if (data.status === 'WAITING' && data.appConfig?.contestStartTime) {
             const startTime = new Date(data.appConfig.contestStartTime).getTime();
             const now = Date.now();
@@ -1136,7 +1255,6 @@
             }
         }
         
-        // If we have questions, show auth
         if (data.questions && data.questions.length > 0) {
             state.questions = data.questions;
             state.totalQuestions = data.questions.length;
@@ -1163,7 +1281,7 @@
     }
 
     // ============================================================
-    // COUNTDOWN SYSTEM - FIXED
+    // COUNTDOWN SYSTEM
     // ============================================================
     
     function showCountdown(startTime, data) {
@@ -1171,7 +1289,6 @@
         const totalDuration = startTime - Date.now();
         let lastUpdate = -1;
         
-        // Store the data for later use
         saveToStorage('countdownData', {
             startTime: startTime,
             data: data
@@ -1185,11 +1302,8 @@
                 clearInterval(state.countdownInterval);
                 el.countdownStatus.innerHTML = '🚀 <span class="highlight">Contest is starting now!</span>';
                 el.countdownProgress.style.width = '0%';
-                
-                // Mark countdown as complete
                 state.isCountdownComplete = true;
                 
-                // CRITICAL FIX: Directly show auth with stored data
                 setTimeout(() => {
                     if (data.questions && data.questions.length > 0) {
                         state.questions = data.questions;
@@ -1198,7 +1312,6 @@
                         setupPayment(data.appConfig);
                         showScreen(el.auth);
                     } else {
-                        // If no questions in stored data, fetch again
                         refetchContestData();
                     }
                 }, 1500);
@@ -1209,7 +1322,6 @@
             const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
             
-            // Update only when needed
             const currentKey = `${hours}:${minutes}:${seconds}`;
             if (currentKey !== lastUpdate) {
                 el.countdownHours.textContent = String(hours).padStart(2, '0');
@@ -1218,11 +1330,9 @@
                 lastUpdate = currentKey;
             }
             
-            // Progress bar
             const progress = (remaining / totalDuration) * 100;
             el.countdownProgress.style.width = `${Math.max(0, progress)}%`;
             
-            // Status messages
             if (hours > 0) {
                 el.countdownStatus.innerHTML = `⏳ <span class="highlight">${hours}h ${minutes}m ${seconds}s</span> until contest begins`;
             } else if (minutes > 5) {
@@ -1240,13 +1350,12 @@
         state.countdownInterval = setInterval(updateCountdown, 100);
     }
 
-    // Fallback function to refetch data if needed
     async function refetchContestData() {
         try {
             showScreen(el.loader);
             updateLoader('Loading', 'Fetching contest data...');
             
-            const response = await fetchWithTimeout(API_URL, 10000);
+            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 10000);
             const data = await response.json();
             
             if (data.status === 'CLOSED') {
@@ -1288,10 +1397,6 @@
         }
     }
 
-    // ============================================================
-    // UPI COPY FUNCTION
-    // ============================================================
-    
     window.copyUpiId = function() {
         const upiId = el.upiIdText.textContent;
         if (!upiId || upiId === 'Loading...') return;
@@ -1325,7 +1430,6 @@
     el.startForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Validate transaction ID
         const txn = el.userTxn.value.trim();
         if (!/^[a-zA-Z0-9]{12}$/.test(txn)) {
             el.userTxn.classList.add('error');
@@ -1336,7 +1440,6 @@
         el.userTxn.classList.remove('error');
         el.txnValidationError.classList.remove('show');
         
-        // Start quiz
         state.startTime = new Date();
         state.answers = {};
         state.currentIndex = 0;
@@ -1359,14 +1462,11 @@
         const isLast = state.currentIndex === state.questions.length - 1;
         const reqStar = q.required === 'YES' ? ' <span class="required-star">*</span>' : '';
         
-        // Update header
-        const qLabel = isBonus ? '🎯 BONUS' : `Question ${q.qNo}`;
+        const qLabel = isBonus ? '🎯 BONUS' : `${APP_CONFIG.QUESTION_LABEL} ${q.qNo}`;
         el.qNumberText.innerHTML = `<i class="fas fa-question-circle"></i> ${qLabel}${reqStar}`;
         
-        // Update next button
-        el.nextBtnText.textContent = isLast ? 'Submit All' : 'Next Question';
+        el.nextBtnText.textContent = isLast ? APP_CONFIG.SUBMIT_BTN_TEXT : APP_CONFIG.NEXT_BTN_TEXT;
         
-        // Build question
         let html = `<div class="question-text">`;
         if (isBonus) {
             html += `<span class="q-label">⭐ Bonus Question</span><br>`;
@@ -1390,7 +1490,6 @@
         
         el.questionContainer.innerHTML = html;
         
-        // Start timer
         let timeLeft = parseInt(q.timer) || 30;
         el.timeLeft.textContent = timeLeft;
         el.timerDisplay.classList.remove('warning');
@@ -1420,19 +1519,18 @@
     el.nextBtn.addEventListener('click', function() {
         const q = state.questions[state.currentIndex];
         
-        // Validate required
         if (q.required === 'YES') {
             const isMcq = q.type === 'MCQ' || q.type === 'YESNO';
             if (isMcq && !state.selectedAnswer) {
                 el.validationError.classList.add('show');
-                el.validationError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please select an answer';
+                el.validationError.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${APP_CONFIG.VALIDATION_TEXT}`;
                 return;
             }
             if (!isMcq) {
                 const textInput = document.querySelector('#questionContainer .text-input');
                 if (!textInput || !textInput.value.trim()) {
                     el.validationError.classList.add('show');
-                    el.validationError.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please provide an answer';
+                    el.validationError.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Please provide an answer`;
                     return;
                 }
             }
@@ -1492,17 +1590,28 @@
             timestamp: new Date().toISOString()
         };
         
-        // Send data with timeout
-        fetch(API_URL, {
+        fetch(APP_CONFIG.API_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }).then(() => {
-            showSuccess(formattedTime);
-            clearStorage(); // Clear cached data
-        }).catch(() => {
-            // Even on error, show success (no-cors limitation)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'DUPLICATE') {
+                showScreen(el.auth);
+                alert('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE));
+                return;
+            }
+            
+            if (result.status === 'SUCCESS') {
+                showSuccess(formattedTime);
+                clearStorage();
+            } else {
+                throw new Error(result.message || 'Submission failed');
+            }
+        })
+        .catch(error => {
+            console.error('Submit error:', error);
             showSuccess(formattedTime);
             clearStorage();
         });
@@ -1554,7 +1663,7 @@
     });
 
     // ============================================================
-    // AUTO-RETRY ON NETWORK ERROR
+    // AUTO-RETRY
     // ============================================================
     
     let retryCount = 0;
@@ -1566,11 +1675,10 @@
             updateLoader('Retrying...', `Attempt ${retryCount} of ${maxRetries}`);
             setTimeout(init, 2000);
         } else {
-            updateLoader('Connection Failed', 'Please refresh the page to try again');
+            updateLoader('Connection Failed', APP_CONFIG.FETCH_ERROR);
         }
     }
 
-    // Override init error handling
     const originalInit = init;
     init = async function() {
         try {
@@ -1583,6 +1691,7 @@
     };
 
     console.log('🏏 Live Prediction Center loaded successfully!');
+    console.log('📝 Edit APP_CONFIG at the top to change all text!');
 </script>
 </body>
 </html>
