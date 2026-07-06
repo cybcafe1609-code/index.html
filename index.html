@@ -27,6 +27,14 @@
         .card.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Countdown Timer Styles */
+        .countdown-box { text-align: center; padding: 30px 0; }
+        .countdown-timer { font-size: 48px; font-weight: 800; color: var(--primary); font-family: 'Poppins', monospace; text-shadow: 0 0 20px rgba(255, 204, 0, 0.3); }
+        .countdown-label { font-size: 14px; color: #aaa; margin-top: 10px; }
+        .countdown-progress { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 20px; overflow: hidden; }
+        .countdown-progress-bar { height: 100%; background: var(--primary); transition: width 1s linear; }
+        .countdown-status { font-size: 14px; color: var(--danger); margin-top: 15px; font-weight: 600; }
+        
         /* Payment Area Styles */
         .payment-box { background: rgba(255,255,255,0.07); border: 1px dashed var(--primary); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; }
         .upi-click-box { display: flex; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 8px 12px; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
@@ -47,6 +55,7 @@
         .text-ans:focus { border-color: var(--primary); }
         
         .btn { width: 100%; background: var(--primary); color: var(--dark); border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .pay-btn { display: inline-block; text-decoration: none; background: #2ecc71; color: white; margin-bottom: 15px; width: auto; padding: 10px 25px; font-size: 15px; text-transform: uppercase; border-radius: 10px; font-weight: bold; }
         .error-msg { color: var(--danger); font-size: 12px; margin-top: 4px; font-weight: 600; display: none; }
         .loader { text-align: center; padding: 30px 0; }
@@ -69,10 +78,26 @@
         </div>
     </div>
 
+    <div id="countdownScreen" class="card">
+        <div class="countdown-box">
+            <i class="fa-solid fa-clock" style="font-size: 40px; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 10px;">Contest Starts In</h2>
+            <div class="countdown-timer" id="countdownDisplay">--:--:--</div>
+            <div class="countdown-label" id="countdownLabel">Match will begin shortly</div>
+            <div class="countdown-progress">
+                <div class="countdown-progress-bar" id="countdownProgress" style="width: 100%;"></div>
+            </div>
+            <div class="countdown-status" id="countdownStatus">⏳ Waiting for contest to start...</div>
+        </div>
+    </div>
+
     <div id="closedScreen" class="card" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-circle-xmark" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;"></i>
         <h2>Contest Closed!</h2>
         <p style="color: #ccc; margin-top: 10px; font-size: 14px;">Prediction submissions are currently disabled for this match.</p>
+        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+            <p style="font-size: 12px; color: #888;">Next contest will be announced soon.</p>
+        </div>
     </div>
 
     <div id="authScreen" class="card">
@@ -134,8 +159,12 @@
     let selectedAnswer = "";
     let totalStartTime, questionTimerLoop, questionTimeLeft = 0;
     let targetUpiStr = "";
+    let countdownInterval = null;
+    let contestStartTime = null;
+    let isContestStarted = false;
 
     const loaderScreen = document.getElementById('loaderScreen');
+    const countdownScreen = document.getElementById('countdownScreen');
     const closedScreen = document.getElementById('closedScreen');
     const authScreen = document.getElementById('authScreen');
     const quizScreen = document.getElementById('quizScreen');
@@ -157,25 +186,94 @@
                     document.getElementById('appBrandName').innerText = data.appConfig.brandName;
                     document.getElementById('appSubHeading').innerText = data.appConfig.subHeading;
                     
-                    if (data.appConfig.upiId || data.appConfig.upiLink) {
-                        document.getElementById('paymentSection').style.display = "block";
-                        if(data.appConfig.upiId) {
-                            targetUpiStr = data.appConfig.upiId;
-                            document.getElementById('upiIdText').innerText = data.appConfig.upiId;
+                    // Check if contest has a start time
+                    if (data.appConfig.contestStartTime) {
+                        contestStartTime = new Date(data.appConfig.contestStartTime).getTime();
+                        const currentTime = new Date().getTime();
+                        
+                        if (currentTime >= contestStartTime) {
+                            // Contest already started
+                            isContestStarted = true;
+                            initializeContest(data);
+                        } else {
+                            // Show countdown
+                            switchScreen(countdownScreen);
+                            startCountdown(contestStartTime, data);
                         }
-                        if(data.appConfig.upiLink) {
-                            document.getElementById('payNowBtn').href = data.appConfig.upiLink;
-                        }
+                    } else {
+                        // No start time specified, show auth directly
+                        isContestStarted = true;
+                        initializeContest(data);
                     }
-
-                    activeQuestions = data.questions;
-                    switchScreen(authScreen);
                 }
             })
             .catch(err => { 
                 loadingText.innerText = "Error loading system. Please refresh."; 
+                console.error('Fetch error:', err);
             });
     });
+
+    function initializeContest(data) {
+        if (data.appConfig.upiId || data.appConfig.upiLink) {
+            document.getElementById('paymentSection').style.display = "block";
+            if(data.appConfig.upiId) {
+                targetUpiStr = data.appConfig.upiId;
+                document.getElementById('upiIdText').innerText = data.appConfig.upiId;
+            }
+            if(data.appConfig.upiLink) {
+                document.getElementById('payNowBtn').href = data.appConfig.upiLink;
+            }
+        }
+
+        activeQuestions = data.questions;
+        switchScreen(authScreen);
+    }
+
+    function startCountdown(startTime, data) {
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const countdownProgress = document.getElementById('countdownProgress');
+        const countdownStatus = document.getElementById('countdownStatus');
+        const totalDuration = startTime - new Date().getTime();
+
+        countdownInterval = setInterval(() => {
+            const currentTime = new Date().getTime();
+            const timeLeft = startTime - currentTime;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                countdownStatus.textContent = '🚀 Contest is starting now!';
+                countdownStatus.style.color = '#2ecc71';
+                setTimeout(() => {
+                    isContestStarted = true;
+                    initializeContest(data);
+                }, 1000);
+                return;
+            }
+
+            // Calculate hours, minutes, seconds
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            countdownDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            // Update progress bar
+            const progress = (timeLeft / totalDuration) * 100;
+            countdownProgress.style.width = `${progress}%`;
+
+            // Update status message
+            if (hours > 0) {
+                countdownStatus.textContent = `⏳ Contest starts in ${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 5) {
+                countdownStatus.textContent = `⏳ Starting in ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                countdownStatus.textContent = `⚡ Almost there! ${minutes}m ${seconds}s`;
+            } else {
+                countdownStatus.textContent = `🔥 Get ready! ${seconds}s`;
+            }
+
+        }, 1000);
+    }
 
     function copyUpiId() {
         if(!targetUpiStr) return;
