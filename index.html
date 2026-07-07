@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* All existing styles - keeping them same */
+        /* ===== ALL STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -143,20 +143,6 @@
         .loader-container {
             text-align: center;
             padding: 50px 0;
-        }
-
-        .spinner {
-            width: 56px;
-            height: 56px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         .loader-container .loading-icon {
@@ -747,27 +733,12 @@
             border: 1px solid var(--border-color);
         }
 
-        .debug-info {
-            margin-top: 12px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            display: none;
-        }
-
-        .debug-info.show {
-            display: block;
-        }
-
-        /* Toast Notification */
         .toast-notification {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 12px 24px;
+            padding: 14px 24px;
             border-radius: 12px;
             font-weight: 600;
             font-size: 14px;
@@ -775,6 +746,7 @@
             display: none;
             animation: slideDown 0.3s ease;
             max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
         .toast-notification.success {
@@ -801,6 +773,21 @@
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
+        }
+
+        .debug-info {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: none;
+            word-break: break-all;
+        }
+
+        .debug-info.show {
+            display: block;
         }
 
         @media (max-width: 480px) {
@@ -842,29 +829,6 @@
                 padding: 12px;
             }
         }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 2px;
-        }
-
-        .text-center { text-align: center; }
-        .mt-8 { margin-top: 8px; }
-        .mt-16 { margin-top: 16px; }
-        .gap-8 { gap: 8px; }
-        .flex { display: flex; }
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-        .fw-700 { font-weight: 700; }
-        .text-secondary { color: var(--text-secondary); }
-        .text-primary { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -1021,69 +985,51 @@
 
 <script>
     // ============================================================
-    // 🔥 CENTRALIZED CONFIGURATION
+    // 🔥 CONFIGURATION - CHANGE YOUR URL HERE
     // ============================================================
     
     const APP_CONFIG = {
-        // API Configuration - REPLACE WITH YOUR DEPLOYED URL
-        API_URL: "https://script.google.com/macros/s/AKfycbxo_PBcJAjz7TFAygl4Oa5Xc0QaYIriFdFrf1jQVE18ZfepoTSEQieXgNzsuT_YsRQU/exec",
+        // ⚠️ IMPORTANT: Replace with your actual Web App URL
+        API_URL: "https://script.google.com/macros/s/AKfycbz1OWP5TIEczg5kx0kMMzuemlsgk8CRjBJbTk-BTAVD0mOJujEvvyhhKepsuWAw-hnd/exec",
         
-        // Branding
         BRAND_NAME: "🏏 Cricket Predictions",
         SUB_HEADING: "Live Match Prediction Center",
         BADGE_TEXT: "LIVE",
-        
-        // Countdown
         COUNTDOWN_TITLE: "Match Starts In",
         COUNTDOWN_SUBTITLE: "Get ready to make your predictions! 🏏",
-        COUNTDOWN_WAITING: "Waiting for contest to begin...",
-        
-        // Payment
         PAYMENT_TITLE: "Pay Entry Fee",
         PAY_BTN_TEXT: "Pay Now",
         COPY_BTN_TEXT: "COPY",
         COPY_TOAST_TEXT: "UPI ID Copied!",
-        
-        // Form Labels
         LABEL_NAME: "Full Name",
         LABEL_PHONE: "WhatsApp Number",
         LABEL_TXN: "Transaction ID",
         LABEL_TELEGRAM: "Telegram Username",
         TXN_ERROR_TEXT: "Please enter a valid Transaction ID",
         START_BTN_TEXT: "Start Prediction",
-        
-        // Quiz
         QUESTION_LABEL: "Question",
         VALIDATION_TEXT: "Please select an answer",
         NEXT_BTN_TEXT: "Next Question",
         SUBMIT_BTN_TEXT: "Submit All",
-        
-        // Success
         SUCCESS_TITLE: "🎉 Prediction Submitted!",
         SUCCESS_SUBTEXT: "Your responses have been locked in successfully.",
         SUCCESS_DETAIL1: "📋 Your entry has been recorded",
         SUCCESS_DETAIL2: "Good luck! 🏏",
-        
-        // Closed
         CLOSED_TITLE: "Contest Closed",
         CLOSED_SUBTEXT: "Prediction submissions are currently disabled.",
         CLOSED_DETAIL1: "📅 Stay tuned for the next contest!",
         CLOSED_DETAIL2: "Follow us for updates 🏏",
-        
-        // Loading
         LOADING_TITLE: "Initializing Platform",
         LOADING_TEXT: "Setting up your prediction center...",
-        
-        // Messages
         DUPLICATE_MESSAGE: "You have already submitted a prediction!",
         CONNECTION_ERROR: "Unable to connect. Please check your internet connection.",
         FETCH_ERROR: "Failed to load. Please refresh.",
-        SUBMIT_ERROR: "Failed to submit. Please try again or contact support.",
+        SUBMIT_ERROR: "Failed to submit. Please try again.",
         SUBMIT_SUCCESS: "✅ Prediction submitted successfully!"
     };
 
     // ============================================================
-    // STATE MANAGEMENT
+    // STATE
     // ============================================================
     
     const state = {
@@ -1096,8 +1042,6 @@
         countdownInterval: null,
         totalQuestions: 0,
         quizData: null,
-        isCountdownComplete: false,
-        isContestActive: false,
         isSubmitting: false
     };
 
@@ -1112,13 +1056,11 @@
         quiz: document.getElementById('quizScreen'),
         success: document.getElementById('successScreen'),
         closed: document.getElementById('closedScreen'),
-        
         brandName: document.getElementById('appBrandName'),
         subHeading: document.getElementById('appSubHeading'),
         badgeText: document.getElementById('badgeText'),
         loadingTitle: document.getElementById('loadingTitle'),
         loadingText: document.getElementById('loadingText'),
-        
         countdownTitle: document.getElementById('countdownTitle'),
         countdownSubtitle: document.getElementById('countdownSubtitle'),
         countdownHours: document.getElementById('countdownHours'),
@@ -1126,7 +1068,6 @@
         countdownSeconds: document.getElementById('countdownSeconds'),
         countdownProgress: document.getElementById('countdownProgress'),
         countdownStatus: document.getElementById('countdownStatus'),
-        
         paymentTitle: document.getElementById('paymentTitle'),
         payBtnText: document.getElementById('payBtnText'),
         copyBtnText: document.getElementById('copyBtnText'),
@@ -1136,7 +1077,6 @@
         payNowBtn: document.getElementById('payNowBtn'),
         copyToast: document.getElementById('copyToast'),
         paymentSection: document.getElementById('paymentSection'),
-        
         labelName: document.getElementById('labelName'),
         labelPhone: document.getElementById('labelPhone'),
         labelTxn: document.getElementById('labelTxn'),
@@ -1144,136 +1084,104 @@
         txnErrorText: document.getElementById('txnErrorText'),
         startBtnText: document.getElementById('startBtnText'),
         submitBtn: document.getElementById('submitBtn'),
-        
         questionLabel: document.getElementById('questionLabel'),
         validationText: document.getElementById('validationText'),
         nextBtnText: document.getElementById('nextBtnText'),
-        
         successTitle: document.getElementById('successTitle'),
         successSubtext: document.getElementById('successSubtext'),
         successDetail1: document.getElementById('successDetail1'),
         successDetail2: document.getElementById('successDetail2'),
         successTime: document.getElementById('successTime'),
-        
         closedTitle: document.getElementById('closedTitle'),
         closedSubtext: document.getElementById('closedSubtext'),
         closedDetail1: document.getElementById('closedDetail1'),
         closedDetail2: document.getElementById('closedDetail2'),
-        
         timerDisplay: document.getElementById('timerDisplay'),
         timeLeft: document.getElementById('timeLeft'),
         qNumberText: document.getElementById('qNumberText'),
         questionContainer: document.getElementById('questionContainer'),
         validationError: document.getElementById('validationError'),
         nextBtn: document.getElementById('nextBtn'),
-        
         startForm: document.getElementById('startForm'),
         userName: document.getElementById('userName'),
         userPhone: document.getElementById('userPhone'),
         userTxn: document.getElementById('userTxn'),
         userTelegram: document.getElementById('userTelegram'),
         txnValidationError: document.getElementById('txnValidationError'),
-        
         debugInfo: document.getElementById('debugInfo'),
         toast: document.getElementById('toast')
     };
 
     // ============================================================
-    // APPLY CONFIGURATION
+    // APPLY CONFIG
     // ============================================================
     
     function applyConfig() {
-        // Branding
         el.brandName.textContent = APP_CONFIG.BRAND_NAME;
         el.subHeading.textContent = APP_CONFIG.SUB_HEADING;
         el.badgeText.textContent = APP_CONFIG.BADGE_TEXT;
-        
-        // Countdown
         el.countdownTitle.textContent = APP_CONFIG.COUNTDOWN_TITLE;
         el.countdownSubtitle.textContent = APP_CONFIG.COUNTDOWN_SUBTITLE;
-        
-        // Payment
         el.paymentTitle.textContent = APP_CONFIG.PAYMENT_TITLE;
         el.payBtnText.textContent = APP_CONFIG.PAY_BTN_TEXT;
         el.copyBtnText.textContent = APP_CONFIG.COPY_BTN_TEXT;
         el.copyToastText.textContent = APP_CONFIG.COPY_TOAST_TEXT;
-        
-        // Form
         el.labelName.textContent = APP_CONFIG.LABEL_NAME;
         el.labelPhone.textContent = APP_CONFIG.LABEL_PHONE;
         el.labelTxn.textContent = APP_CONFIG.LABEL_TXN;
         el.labelTelegram.textContent = APP_CONFIG.LABEL_TELEGRAM;
         el.txnErrorText.textContent = APP_CONFIG.TXN_ERROR_TEXT;
         el.startBtnText.textContent = APP_CONFIG.START_BTN_TEXT;
-        
-        // Quiz
         el.questionLabel.textContent = APP_CONFIG.QUESTION_LABEL;
         el.validationText.textContent = APP_CONFIG.VALIDATION_TEXT;
         el.nextBtnText.textContent = APP_CONFIG.NEXT_BTN_TEXT;
-        
-        // Success
         el.successTitle.textContent = APP_CONFIG.SUCCESS_TITLE;
         el.successSubtext.textContent = APP_CONFIG.SUCCESS_SUBTEXT;
         el.successDetail1.textContent = APP_CONFIG.SUCCESS_DETAIL1;
         el.successDetail2.textContent = APP_CONFIG.SUCCESS_DETAIL2;
-        
-        // Closed
         el.closedTitle.textContent = APP_CONFIG.CLOSED_TITLE;
         el.closedSubtext.textContent = APP_CONFIG.CLOSED_SUBTEXT;
         el.closedDetail1.textContent = APP_CONFIG.CLOSED_DETAIL1;
         el.closedDetail2.textContent = APP_CONFIG.CLOSED_DETAIL2;
-        
-        // Loading
         el.loadingTitle.textContent = APP_CONFIG.LOADING_TITLE;
         el.loadingText.textContent = APP_CONFIG.LOADING_TEXT;
     }
 
     // ============================================================
-    // TOAST NOTIFICATION
+    // TOAST
     // ============================================================
     
     function showToast(message, type = 'info') {
         el.toast.textContent = message;
         el.toast.className = 'toast-notification ' + type;
         el.toast.style.display = 'block';
-        
-        setTimeout(() => {
-            el.toast.style.display = 'none';
-        }, 5000);
+        setTimeout(() => { el.toast.style.display = 'none'; }, 5000);
     }
 
     // ============================================================
-    // STORAGE HELPERS
+    // STORAGE
     // ============================================================
     
     function saveToStorage(key, data) {
-        try {
-            localStorage.setItem('pred_' + key, JSON.stringify(data));
-        } catch (e) {}
+        try { localStorage.setItem('pred_' + key, JSON.stringify(data)); } catch (e) {}
     }
 
     function getFromStorage(key) {
         try {
             const data = localStorage.getItem('pred_' + key);
             return data ? JSON.parse(data) : null;
-        } catch (e) {
-            return null;
-        }
+        } catch (e) { return null; }
     }
 
     function clearStorage() {
         try {
             const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith('pred_')) {
-                    localStorage.removeItem(key);
-                }
-            });
+            keys.forEach(key => { if (key.startsWith('pred_')) localStorage.removeItem(key); });
         } catch (e) {}
     }
 
     // ============================================================
-    // INITIALIZATION
+    // INIT
     // ============================================================
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -1290,19 +1198,20 @@
             const cachedTime = getFromStorage('fetchTime');
             const now = Date.now();
             
-            if (cachedData && cachedTime && (now - cachedTime < 5000)) {
+            if (cachedData && cachedTime && (now - cachedTime < 10000)) {
                 console.log('Using cached data');
                 processContestData(cachedData);
                 return;
             }
             
-            console.log('Fetching fresh data from:', APP_CONFIG.API_URL);
+            console.log('Fetching from:', APP_CONFIG.API_URL);
             
-            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 15000);
+            const response = await fetch(APP_CONFIG.API_URL, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
             
-            if (!response.ok) {
-                throw new Error('HTTP ' + response.status);
-            }
+            if (!response.ok) throw new Error('HTTP ' + response.status);
             
             const data = await response.json();
             console.log('API Response:', data);
@@ -1318,7 +1227,7 @@
             
             const cachedData = getFromStorage('contestData');
             if (cachedData) {
-                console.log('Using cached data due to error');
+                console.log('Using cached data');
                 processContestData(cachedData);
                 return;
             }
@@ -1367,24 +1276,8 @@
             showScreen(el.auth);
             showDebug('Loaded ' + data.questions.length + ' questions');
         } else {
-            console.warn('No questions available');
             showScreen(el.closed);
         }
-    }
-
-    function fetchWithTimeout(url, timeout) {
-        return Promise.race([
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                },
-                mode: 'cors'
-            }),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timeout')), timeout)
-            )
-        ]);
     }
 
     function updateLoader(title, text) {
@@ -1399,7 +1292,7 @@
     }
 
     // ============================================================
-    // COUNTDOWN SYSTEM
+    // COUNTDOWN
     // ============================================================
     
     function showCountdown(startTime, data) {
@@ -1415,13 +1308,11 @@
                 clearInterval(state.countdownInterval);
                 el.countdownStatus.innerHTML = '🚀 <span class="highlight">Contest is starting now!</span>';
                 el.countdownProgress.style.width = '0%';
-                state.isCountdownComplete = true;
                 
                 setTimeout(() => {
                     if (data.questions && data.questions.length > 0) {
                         state.questions = data.questions;
                         state.totalQuestions = data.questions.length;
-                        state.isContestActive = true;
                         setupPayment(data.appConfig);
                         showScreen(el.auth);
                     } else {
@@ -1468,7 +1359,7 @@
             showScreen(el.loader);
             updateLoader('Loading', 'Fetching contest data...');
             
-            const response = await fetchWithTimeout(APP_CONFIG.API_URL, 10000);
+            const response = await fetch(APP_CONFIG.API_URL);
             const data = await response.json();
             
             if (data.status === 'CLOSED') {
@@ -1479,7 +1370,6 @@
             if (data.questions && data.questions.length > 0) {
                 state.questions = data.questions;
                 state.totalQuestions = data.questions.length;
-                state.isContestActive = true;
                 setupPayment(data.appConfig);
                 showScreen(el.auth);
             } else {
@@ -1492,21 +1382,15 @@
     }
 
     // ============================================================
-    // PAYMENT SETUP
+    // PAYMENT
     // ============================================================
     
     function setupPayment(config) {
         if (config?.upiId || config?.upiLink) {
             el.paymentSection.style.display = 'block';
-            if (config.upiId) {
-                el.upiIdText.textContent = config.upiId;
-            }
-            if (config.upiLink) {
-                el.payNowBtn.href = config.upiLink;
-            }
-            if (config.entryFee) {
-                el.feeDisplay.textContent = `₹${config.entryFee}`;
-            }
+            if (config.upiId) el.upiIdText.textContent = config.upiId;
+            if (config.upiLink) el.payNowBtn.href = config.upiLink;
+            if (config.entryFee) el.feeDisplay.textContent = `₹${config.entryFee}`;
         }
     }
 
@@ -1521,12 +1405,7 @@
             textArea.value = upiId;
             document.body.appendChild(textArea);
             textArea.select();
-            try {
-                document.execCommand('copy');
-                showCopyToast();
-            } catch (err) {
-                console.error('Copy failed:', err);
-            }
+            try { document.execCommand('copy'); showCopyToast(); } catch (err) {}
             textArea.remove();
         }
     };
@@ -1586,7 +1465,7 @@
     });
 
     // ============================================================
-    // QUIZ SYSTEM
+    // QUIZ
     // ============================================================
     
     function loadQuestion() {
@@ -1601,13 +1480,10 @@
         
         const qLabel = isBonus ? '🎯 BONUS' : `${APP_CONFIG.QUESTION_LABEL} ${q.qNo}`;
         el.qNumberText.innerHTML = `<i class="fas fa-question-circle"></i> ${qLabel}${reqStar}`;
-        
         el.nextBtnText.textContent = isLast ? APP_CONFIG.SUBMIT_BTN_TEXT : APP_CONFIG.NEXT_BTN_TEXT;
         
         let html = `<div class="question-text">`;
-        if (isBonus) {
-            html += `<span class="q-label">⭐ Bonus Question</span><br>`;
-        }
+        if (isBonus) html += `<span class="q-label">⭐ Bonus Question</span><br>`;
         html += `${q.question}</div>`;
         
         if (q.type === 'MCQ' || q.type === 'YESNO') {
@@ -1634,11 +1510,7 @@
         state.timerInterval = setInterval(() => {
             timeLeft--;
             el.timeLeft.textContent = timeLeft;
-            
-            if (timeLeft <= 5) {
-                el.timerDisplay.classList.add('warning');
-            }
-            
+            if (timeLeft <= 5) el.timerDisplay.classList.add('warning');
             if (timeLeft <= 0) {
                 clearInterval(state.timerInterval);
                 autoAdvance();
@@ -1660,7 +1532,6 @@
             const isMcq = q.type === 'MCQ' || q.type === 'YESNO';
             if (isMcq && !state.selectedAnswer) {
                 el.validationError.classList.add('show');
-                el.validationError.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${APP_CONFIG.VALIDATION_TEXT}`;
                 return;
             }
             if (!isMcq) {
@@ -1707,7 +1578,7 @@
     }
 
     // ============================================================
-    // SUBMIT ALL - UPDATED WITH RETRY
+    // SUBMIT - FIXED
     // ============================================================
     
     function submitAll() {
@@ -1745,16 +1616,9 @@
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(payload),
-            mode: 'cors'
+            body: JSON.stringify(payload)
         })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                throw new Error('HTTP ' + response.status);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(result => {
             console.log('Submit result:', result);
             
@@ -1773,11 +1637,7 @@
                 return;
             }
             
-            if (result.status === 'ERROR') {
-                throw new Error(result.message || 'Submission failed');
-            }
-            
-            throw new Error('Unknown response: ' + JSON.stringify(result));
+            throw new Error(result.message || 'Submission failed');
         })
         .catch(error => {
             console.error('Submit error:', error);
@@ -1823,14 +1683,11 @@
     
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && el.auth.classList.contains('active')) {
-            const form = el.startForm;
-            if (form) form.dispatchEvent(new Event('submit'));
+            el.startForm.dispatchEvent(new Event('submit'));
         }
-        
         if (e.key === 'Enter' && el.quiz.classList.contains('active')) {
             el.nextBtn.click();
         }
-        
         if (el.quiz.classList.contains('active')) {
             const num = parseInt(e.key);
             if (num >= 1 && num <= 4) {
@@ -1840,37 +1697,7 @@
         }
     });
 
-    // ============================================================
-    // AUTO-RETRY
-    // ============================================================
-    
-    let retryCount = 0;
-    const maxRetries = 5;
-
-    function retryInit() {
-        if (retryCount < maxRetries) {
-            retryCount++;
-            updateLoader('Retrying...', `Attempt ${retryCount} of ${maxRetries}`);
-            setTimeout(init, 3000);
-        } else {
-            updateLoader('Connection Failed', APP_CONFIG.FETCH_ERROR);
-            showToast('⚠️ ' + APP_CONFIG.FETCH_ERROR, 'error');
-        }
-    }
-
-    const originalInit = init;
-    init = async function() {
-        try {
-            await originalInit.call(this);
-            retryCount = 0;
-        } catch (error) {
-            console.error('Init failed:', error);
-            retryInit();
-        }
-    };
-
-    console.log('🏏 Live Prediction Center loaded successfully!');
-    console.log('📝 Edit APP_CONFIG at the top to change all text!');
+    console.log('🏏 Live Prediction Center loaded!');
     console.log('🔧 API URL:', APP_CONFIG.API_URL);
 </script>
 </body>
