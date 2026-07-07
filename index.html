@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Your existing styles - keeping them same */
+        /* All existing styles - keeping them same */
         * {
             margin: 0;
             padding: 0;
@@ -761,6 +761,48 @@
             display: block;
         }
 
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 9999;
+            display: none;
+            animation: slideDown 0.3s ease;
+            max-width: 90%;
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+            color: #000;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .toast-notification.info {
+            background: var(--primary);
+            color: #000;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -974,14 +1016,17 @@
     </div>
 </div>
 
+<!-- Toast Notification -->
+<div id="toast" class="toast-notification"></div>
+
 <script>
     // ============================================================
-    // 🔥 CENTRALIZED CONFIGURATION - Edit all text here!
+    // 🔥 CENTRALIZED CONFIGURATION
     // ============================================================
     
     const APP_CONFIG = {
-        // API Configuration - IMPORTANT: Use your deployed Web App URL
-        API_URL: "https://script.google.com/macros/s/AKfycbz7jw7evWb9pOxaf90Bl9ky-9bfoFy348LU4s0HkaQf0f2KZ5ixYZWNZlOs0oFxY_pp/exec",
+        // API Configuration - REPLACE WITH YOUR DEPLOYED URL
+        API_URL: "https://script.google.com/macros/s/AKfycbxo_PBcJAjz7TFAygl4Oa5Xc0QaYIriFdFrf1jQVE18ZfepoTSEQieXgNzsuT_YsRQU/exec",
         
         // Branding
         BRAND_NAME: "🏏 Cricket Predictions",
@@ -1029,13 +1074,12 @@
         LOADING_TITLE: "Initializing Platform",
         LOADING_TEXT: "Setting up your prediction center...",
         
-        // Duplicate Message
-        DUPLICATE_MESSAGE: "You have already submitted a prediction! Please contact support if you think this is a mistake.",
-        
-        // Errors
+        // Messages
+        DUPLICATE_MESSAGE: "You have already submitted a prediction!",
         CONNECTION_ERROR: "Unable to connect. Please check your internet connection.",
         FETCH_ERROR: "Failed to load. Please refresh.",
-        SUBMIT_ERROR: "Failed to submit. Please try again."
+        SUBMIT_ERROR: "Failed to submit. Please try again or contact support.",
+        SUBMIT_SUCCESS: "✅ Prediction submitted successfully!"
     };
 
     // ============================================================
@@ -1130,7 +1174,8 @@
         userTelegram: document.getElementById('userTelegram'),
         txnValidationError: document.getElementById('txnValidationError'),
         
-        debugInfo: document.getElementById('debugInfo')
+        debugInfo: document.getElementById('debugInfo'),
+        toast: document.getElementById('toast')
     };
 
     // ============================================================
@@ -1184,6 +1229,20 @@
     }
 
     // ============================================================
+    // TOAST NOTIFICATION
+    // ============================================================
+    
+    function showToast(message, type = 'info') {
+        el.toast.textContent = message;
+        el.toast.className = 'toast-notification ' + type;
+        el.toast.style.display = 'block';
+        
+        setTimeout(() => {
+            el.toast.style.display = 'none';
+        }, 5000);
+    }
+
+    // ============================================================
     // STORAGE HELPERS
     // ============================================================
     
@@ -1227,13 +1286,11 @@
             showScreen(el.loader);
             updateLoader(APP_CONFIG.LOADING_TITLE, APP_CONFIG.LOADING_TEXT);
             
-            // Clear cache first to avoid issues
             const cachedData = getFromStorage('contestData');
             const cachedTime = getFromStorage('fetchTime');
             const now = Date.now();
             
-            // Use cache only if less than 10 seconds old
-            if (cachedData && cachedTime && (now - cachedTime < 10000)) {
+            if (cachedData && cachedTime && (now - cachedTime < 5000)) {
                 console.log('Using cached data');
                 processContestData(cachedData);
                 return;
@@ -1267,8 +1324,8 @@
             }
             
             updateLoader('Connection Error', APP_CONFIG.CONNECTION_ERROR);
+            showToast('⚠️ ' + APP_CONFIG.CONNECTION_ERROR, 'error');
             
-            // Retry after 5 seconds
             setTimeout(() => {
                 if (document.getElementById('loaderScreen').classList.contains('active')) {
                     init();
@@ -1285,7 +1342,6 @@
             return;
         }
         
-        // Update branding
         if (data.appConfig) {
             el.brandName.textContent = data.appConfig.brandName || APP_CONFIG.BRAND_NAME;
             el.subHeading.textContent = data.appConfig.subHeading || APP_CONFIG.SUB_HEADING;
@@ -1293,7 +1349,6 @@
         
         state.quizData = data;
         
-        // Check if contest is waiting to start
         if (data.status === 'WAITING' && data.appConfig?.contestStartTime) {
             const startTime = new Date(data.appConfig.contestStartTime).getTime();
             const now = Date.now();
@@ -1304,7 +1359,6 @@
             }
         }
         
-        // Check if questions are available
         if (data.questions && data.questions.length > 0) {
             state.questions = data.questions;
             state.totalQuestions = data.questions.length;
@@ -1483,26 +1537,25 @@
     }
 
     // ============================================================
-    // FORM SUBMISSION - FIXED
+    // FORM SUBMISSION
     // ============================================================
     
     el.startForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Validate all fields
         const name = el.userName.value.trim();
         const phone = el.userPhone.value.trim();
         const txn = el.userTxn.value.trim();
         const telegram = el.userTelegram.value.trim();
         
         if (!name || name.length < 2) {
-            alert('Please enter your full name');
+            showToast('Please enter your full name', 'error');
             el.userName.focus();
             return;
         }
         
         if (!phone || phone.length < 10) {
-            alert('Please enter a valid WhatsApp number');
+            showToast('Please enter a valid WhatsApp number', 'error');
             el.userPhone.focus();
             return;
         }
@@ -1511,11 +1564,12 @@
             el.userTxn.classList.add('error');
             el.txnValidationError.classList.add('show');
             el.userTxn.focus();
+            showToast('Please enter a valid Transaction ID', 'error');
             return;
         }
         
         if (!telegram || !telegram.startsWith('@')) {
-            alert('Please enter your Telegram username starting with @');
+            showToast('Please enter your Telegram username starting with @', 'error');
             el.userTelegram.focus();
             return;
         }
@@ -1653,7 +1707,7 @@
     }
 
     // ============================================================
-    // SUBMIT ALL - FIXED
+    // SUBMIT ALL - UPDATED WITH RETRY
     // ============================================================
     
     function submitAll() {
@@ -1678,6 +1732,13 @@
         
         console.log('Submitting payload:', payload);
         
+        // Try to submit with retry
+        submitWithRetry(payload, formattedTime);
+    }
+
+    function submitWithRetry(payload, formattedTime, attempt = 1) {
+        const maxAttempts = 3;
+        
         fetch(APP_CONFIG.API_URL, {
             method: 'POST',
             headers: { 
@@ -1689,6 +1750,9 @@
         })
         .then(response => {
             console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
             return response.json();
         })
         .then(result => {
@@ -1697,64 +1761,38 @@
             if (result.status === 'DUPLICATE') {
                 state.isSubmitting = false;
                 showScreen(el.auth);
-                alert('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE));
+                showToast('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE), 'error');
                 return;
             }
             
             if (result.status === 'SUCCESS') {
+                state.isSubmitting = false;
                 showSuccess(formattedTime);
                 clearStorage();
-                state.isSubmitting = false;
-            } else if (result.status === 'ERROR') {
-                throw new Error(result.message || 'Submission failed');
-            } else {
-                throw new Error('Unknown response: ' + JSON.stringify(result));
+                showToast(APP_CONFIG.SUBMIT_SUCCESS, 'success');
+                return;
             }
+            
+            if (result.status === 'ERROR') {
+                throw new Error(result.message || 'Submission failed');
+            }
+            
+            throw new Error('Unknown response: ' + JSON.stringify(result));
         })
         .catch(error => {
             console.error('Submit error:', error);
-            state.isSubmitting = false;
             
-            // Try one more time with retry
-            retrySubmit(payload, formattedTime);
+            if (attempt < maxAttempts) {
+                updateLoader('Retrying...', `Attempt ${attempt + 1} of ${maxAttempts}`);
+                setTimeout(() => {
+                    submitWithRetry(payload, formattedTime, attempt + 1);
+                }, 2000);
+            } else {
+                state.isSubmitting = false;
+                showScreen(el.auth);
+                showToast('❌ ' + APP_CONFIG.SUBMIT_ERROR, 'error');
+            }
         });
-    }
-
-    function retrySubmit(payload, formattedTime, attempt = 1) {
-        if (attempt > 3) {
-            alert('❌ ' + APP_CONFIG.SUBMIT_ERROR + '\nPlease contact support with your Transaction ID.');
-            showScreen(el.auth);
-            return;
-        }
-        
-        updateLoader('Retrying...', `Attempt ${attempt} of 3`);
-        
-        setTimeout(() => {
-            fetch(APP_CONFIG.API_URL, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(payload),
-                mode: 'cors'
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === 'SUCCESS') {
-                    showSuccess(formattedTime);
-                    clearStorage();
-                } else if (result.status === 'DUPLICATE') {
-                    showScreen(el.auth);
-                    alert('⚠️ ' + (result.message || APP_CONFIG.DUPLICATE_MESSAGE));
-                } else {
-                    retrySubmit(payload, formattedTime, attempt + 1);
-                }
-            })
-            .catch(() => {
-                retrySubmit(payload, formattedTime, attempt + 1);
-            });
-        }, 2000);
     }
 
     function showSuccess(time) {
@@ -1816,26 +1854,7 @@
             setTimeout(init, 3000);
         } else {
             updateLoader('Connection Failed', APP_CONFIG.FETCH_ERROR);
-            // Show manual retry button
-            const manualRetry = document.createElement('button');
-            manualRetry.textContent = '🔄 Retry Now';
-            manualRetry.style.cssText = `
-                margin-top: 16px;
-                padding: 10px 24px;
-                background: var(--primary);
-                color: #000;
-                border: none;
-                border-radius: 8px;
-                font-weight: 700;
-                cursor: pointer;
-                font-size: 14px;
-            `;
-            manualRetry.onclick = function() {
-                retryCount = 0;
-                init();
-                this.remove();
-            };
-            document.querySelector('.loader-container').appendChild(manualRetry);
+            showToast('⚠️ ' + APP_CONFIG.FETCH_ERROR, 'error');
         }
     }
 
