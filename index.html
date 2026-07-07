@@ -990,7 +990,7 @@
     
     const APP_CONFIG = {
         // ⚠️ IMPORTANT: Replace with your actual Web App URL
-        API_URL: "https://script.google.com/macros/s/AKfycbz1OWP5TIEczg5kx0kMMzuemlsgk8CRjBJbTk-BTAVD0mOJujEvvyhhKepsuWAw-hnd/exec",
+        API_URL: "https://script.google.com/macros/s/AKfycby-sve-ERmigDDYA2YoAw6NgDIKVAq6a8s-Z9N22p6pmQ-5FOwF4gXuJKwf7oUrdWwu/exec",
         
         BRAND_NAME: "🏏 Cricket Predictions",
         SUB_HEADING: "Live Match Prediction Center",
@@ -1262,6 +1262,15 @@
             const startTime = new Date(data.appConfig.contestStartTime).getTime();
             const now = Date.now();
             
+            // FIX: guard against an invalid/unparseable contestStartTime.
+            // Previously, if startTime was NaN, "now < startTime" was silently
+            // false and the app fell through to the closed screen instead of
+            // waiting or opening. Now we treat an invalid date as "just refetch".
+            if (isNaN(startTime)) {
+                refetchContestData();
+                return;
+            }
+            
             if (now < startTime) {
                 showCountdown(startTime, data);
                 return;
@@ -1298,7 +1307,7 @@
     function showCountdown(startTime, data) {
         showScreen(el.countdown);
         const totalDuration = startTime - Date.now();
-        let lastUpdate = -1;
+        let lastUpdate = '';
         
         function updateCountdown() {
             const now = Date.now();
@@ -1309,15 +1318,13 @@
                 el.countdownStatus.innerHTML = '🚀 <span class="highlight">Contest is starting now!</span>';
                 el.countdownProgress.style.width = '0%';
                 
+                // FIX: the WAITING response from the backend never includes
+                // `questions` (see doGet), so the old check "if (data.questions...)"
+                // was always false here and this always fell through to a
+                // refetch anyway. Simplified to always refetch fresh data,
+                // which also guarantees we pick up the latest contest status.
                 setTimeout(() => {
-                    if (data.questions && data.questions.length > 0) {
-                        state.questions = data.questions;
-                        state.totalQuestions = data.questions.length;
-                        setupPayment(data.appConfig);
-                        showScreen(el.auth);
-                    } else {
-                        refetchContestData();
-                    }
+                    refetchContestData();
                 }, 1500);
                 return;
             }
@@ -1359,7 +1366,10 @@
             showScreen(el.loader);
             updateLoader('Loading', 'Fetching contest data...');
             
-            const response = await fetch(APP_CONFIG.API_URL);
+            const response = await fetch(APP_CONFIG.API_URL, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
             const data = await response.json();
             
             if (data.status === 'CLOSED') {
@@ -1610,11 +1620,20 @@
     function submitWithRetry(payload, formattedTime, attempt = 1) {
         const maxAttempts = 3;
         
+        // FIX (critical): Google Apps Script Web Apps do NOT implement
+        // doOptions(), so any fetch() with headers that make it a
+        // "non-simple" CORS request (like Content-Type: application/json)
+        // triggers a preflight OPTIONS request that Apps Script cannot
+        // answer -> the browser blocks the real POST with a CORS error,
+        // and every submission silently fails.
+        // Sending as 'text/plain;charset=utf-8' keeps this a "simple
+        // request" (no preflight). The body is still the same JSON string,
+        // so e.postData.contents on the Apps Script side is unaffected -
+        // JSON.parse() there works exactly the same.
         fetch(APP_CONFIG.API_URL, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'text/plain;charset=utf-8'
             },
             body: JSON.stringify(payload)
         })
